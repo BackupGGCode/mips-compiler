@@ -848,7 +848,23 @@ void xori(int rs, int rt, int imm)
 ** funções de controle da ALU, em construção.
 **
 **/
+
+
 /*
+typedef struct st
+{
+    int regDst;
+    int origAlu;
+    int memReg;
+    int escReg;
+    int leMem;
+    int escMem;
+    int branch;
+    int opAlu1;
+    int opAlu2;
+    int jump;
+}controle;
+
 int ctrl_extend_signal(int var)
 {
     int i=16;
@@ -865,9 +881,36 @@ int ctrl_extend_signal(int var)
 
 controle zera_controle(controle ctrl)
 {
-    ctrl.regDst=ctrl.origAlu=ctrl.memReg=ctrl.escReg=ctrl.leMem=ctrl.escMem=ctrl.branch=ctrl.opAlu1=ctrl.opAlu2=0;
+    ctrl.regDst = ctrl.origAlu = ctrl.memReg = ctrl.escReg = ctrl.leMem = ctrl.escMem = ctrl.branch = ctrl.opAlu1 = ctrl.opAlu2 = 0;
     return ctrl;
 }
+
+// desvio falta ajeitar as variáveis e os parâmetros
+void desvio(controle ctrl, int *PC)
+{
+    if(ctrl.jump)
+    {
+        if(ctrl.branch && zeroAlu)
+        {
+            *PC += 4 + ctrl_extend_signal(instruct15to0);
+        }
+        else
+        {
+            *PC += 4;
+        }
+    }
+    else
+    {
+        *PC = instruct25to0 << 2;
+    }
+}
+
+
+//void mem_dados(controle ctrl, int resAlu, int *dadosLe2)
+//{
+//
+//}
+
 
 int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu)
 {
@@ -890,9 +933,9 @@ int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu)
     return resAlu;
 }
 
-void regist(controle ctrl, int rs, int rt, int rd, shamt, funct)
+void regist(controle ctrl, int rs, int rt, int rd, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc)
 {
-    int zeroAlu=0, resAlu, ctrlAlu; //zeroAlu ativa em ALTO.
+    int zeroAlu=0, resAlu, ctrlAlu, dadosLeitura, dadosEscrita; //zeroAlu ativa em ALTO.
 
     if((ctrl.opAlu1 == 0 && ctrl.opAlu2 == 0)  //lw e sw == add
         ctrlAlu = 2;
@@ -912,14 +955,39 @@ void regist(controle ctrl, int rs, int rt, int rd, shamt, funct)
         }
     }
     resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu);
-    if(branch & zeroAlu) //habilita desvio
+
+    // memória de dados, em construção.
+
+    if(ctrl.escMem)
     {
-        ;
+        dadosEscrita = dadosLe2; //tem que ver onde e como vai usar isso aqui...
     }
     else
     {
-        PC+=4;
+        ; //anything here??
     }
+
+    if(ctrl.leMem)
+    {
+        if(ctrl.memReg)
+        {
+            *dadosEsc = dadosLeitura; //tem que ver como faz pra botar os dados aqui...
+        }
+        else
+        {
+            *dadosEsc = resAlu; // :P
+        }
+    }
+    else
+    {
+        ; //anything here??
+    }
+
+    //mem_dados(ctrl, resAlu, &dadosLe2);
+
+    //fim da memória de dados, em construção.
+
+    desvio(ctrl, PC); //falta acertar quem é PC.
 }
 
 void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
@@ -928,12 +996,14 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
     controle ctrl;
     ctrl = zera_controle(ctrl);
     int dadosLe1, dadosLe2, dadosEsc;
+
     op5 = opcode >> 5; opcode -= op5 << 5;
     op4 = opcode >> 4; opcode -= op4 << 4;
     op3 = opcode >> 3; opcode -= op3 << 3;
     op2 = opcode >> 2; opcode -= op2 << 2;
     op1 = opcode >> 1; opcode -= op1 << 1;
     op0 = opcode;
+
     if(op5 == 0) //R ou beq
     {
         if(op2 == 0) ctrl.regDst=ctrl.escReg=ctrl.opAlu1=1; //R
@@ -944,9 +1014,10 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
         if(op3 == 0) ctrl.origAlu=ctrl.memReg=ctrl.escReg=ctrl.leMem=1; //lw
         else ctrl.origAlu=ctrl.escMem=1; //sw
     }
-    regist(ctrl, rs, rt, rd);
+    regist(ctrl, rs, rt, rd, &dadosLe1, &dadosLe2, &dadosEsc);
 }
 */
+
 /**
 **
 ** FIM dasfunções de controle da ALU, em construção.
