@@ -850,7 +850,6 @@ void xori(int rs, int rt, int imm)
 **/
 
 
-/*
 typedef struct st
 {
     int regDst;
@@ -912,39 +911,56 @@ void desvio(controle ctrl, int *PC)
 //}
 
 
-int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu)
+int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu, int shamt)
 {
 
     int resAlu;
     *zeroAlu = 0; //inativa
     switch(ctrlAlu)
     {
-        case 0: resAlu = rs & rt; break; //and
-        case 1: resAlu = rs | rt; break; //or
-        case 2: resAlu = rs + rt; break; //add
+        case 0: resAlu = rs & rt; break; //and.
+        case 1: resAlu = rs | rt; break; //or.
+        case 2: resAlu = rs + rt; break; //add, lw, sw.
         case 6:
         {
             resAlu = rs - rt;
             if(resAlu == 0) *zeroAlu = 1; //seta ativo
-        }break; //sub
-        case 7: ?????? ; break; //slt
+        }; break; //sub, beq.
+        case 7:
+        {
+            if(rs < rt)
+                rd = 1;
+            else
+                rd = 0;
+        }; break; //slt
+        case ??: rd = rs << shamt; break;   // sll TEM QUE VER QUAL CTRLALU BOTA AKI
+        case ??: PC = rs;                   // jr  TEM QUE VER QUAL CTRLALU BOTA AKI
         default: printf("\n\nErro de controle da ALU! \n\n"); //
     }
     return resAlu;
 }
 
-void regist(controle ctrl, int rs, int rt, int rd, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc)
+void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc)
 {
     int zeroAlu=0, resAlu, ctrlAlu, dadosLeitura, dadosEscrita; //zeroAlu ativa em ALTO.
 
+    /** FALTA VER ONDE FICA: addi, j, jr, jal
+        FALTA ARRUMAR: um monte ^^              **/
+
     if((ctrl.opAlu1 == 0 && ctrl.opAlu2 == 0)  //lw e sw == add
         ctrlAlu = 2;
-    else if(ctrl.opAlu1 == 1 && ctrl.opAlu2 == 0) //beq == subtract
-        ctrlAlu = 6;
+    else
+        if(ctrl.opAlu1 == 1 && ctrl.opAlu2 == 0) //beq ou bne == subtract
+            if() //??  >> COMO DIFERENCIA O BEQ DO BNE POR AQUI?
+                ctrlAlu = 6;
     else //ver campo funct.
     {
         switch (funct)
         {
+            case 0 : ??; //sll
+            case 8 : ??; //jr
+            case 24: ??; break; //mult
+            case 26: ??; break; //div
             case 32: ctrlAlu = 2; break; //add
             case 34: ctrlAlu = 6; break; //sub
             case 36: ctrlAlu = 0; break; //and
@@ -954,7 +970,8 @@ void regist(controle ctrl, int rs, int rt, int rd, int funct, int *dadosLe1, int
             default: printf("\n\nErro no funct para controle da ALU! \n\n");
         }
     }
-    resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu);
+    resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu, shamt);
+
 
     // memória de dados, em construção.
 
@@ -1004,26 +1021,47 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
     op1 = opcode >> 1; opcode -= op1 << 1;
     op0 = opcode;
 
-    if(op5 == 0) //R ou beq
+    /** ESSA PARTE ABAIXO TÁ BEM INCOMPLETA AINDA, mas o caminho parece ser esse **/
+
+    if(op5 == 0) //R, beq, bne
     {
-        if(op2 == 0) ctrl.regDst=ctrl.escReg=ctrl.opAlu1=1; //R
-        else ctrl.branch=ctrl.opAlu2=1; //beq
+        if(op4 == 0)
+        {
+            if(op2 == 0)
+                if(op1 == 0)
+                    ctrl.regDst=ctrl.escReg=ctrl.opAlu1=1; //R
+                else
+                    if(op0 == 1)
+                        ; //jal
+                    else
+                        ; //j
+            else //op2 == 1
+            {
+                if(op0 == 0)
+                    ctrl.branch=ctrl.opAlu2=1; //beq
+                else
+                    ; //bne QUAIS SÃO OS DADOS DE CONTROLE AQUI?
+            }
+        }
+        else //op4 == 1
+        {
+            if(op0 == 1)
+                ; //addi
+        }
     }
     else //lw ou sw
     {
         if(op3 == 0) ctrl.origAlu=ctrl.memReg=ctrl.escReg=ctrl.leMem=1; //lw
         else ctrl.origAlu=ctrl.escMem=1; //sw
     }
-    regist(ctrl, rs, rt, rd, &dadosLe1, &dadosLe2, &dadosEsc);
+    regist(ctrl, rs, rt, rd, shamt, funct, &dadosLe1, &dadosLe2, &dadosEsc);
 }
-*/
 
 /**
 **
 ** FIM dasfunções de controle da ALU, em construção.
 **
 **/
-
 
 
 /**
