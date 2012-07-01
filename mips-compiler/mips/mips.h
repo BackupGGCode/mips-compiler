@@ -13,6 +13,8 @@ int PC;
 int reg[32];      //Registradores
 
 
-void executaInstrucoes(int qntInstrucoes);
+void executaInstrucoes(int qntInstrucoes,int modoExecucao);
+
+void resetaRegistradoresMemoria();
 
 #endif // MIPS_H_INCLUDED

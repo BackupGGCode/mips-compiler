@@ -7,6 +7,27 @@
 #include "mips.h"
 
 
+void leInstrucoes(char* nomeArq){
+    int qnt = leArquivoModo(nomeArq,"r+");
+    //Se não leu o arquivo
+    if(qnt == 0)
+    {
+        printf("Corrija o arquivo!!\n");
+    }else{
+        wait(0.5);
+
+        int opc = execucaoMenu();
+        if(opc == 1 || opc == 2){
+            limpaPrompt();
+            printf("Inicializando operacoes ...\nPC\tOperacao\n");
+            executaInstrucoes(qnt,opc);
+            printf("Operacoes finalizadas com sucesso!\n");
+        }else{
+            printf("Opcao invalida!\n");
+            wait(0.5);
+        }
+    }
+}
 /**
 ** Procedimento para realizar a leitura
 **/
@@ -32,21 +53,7 @@ void realizaLeitura()
             continue;
         }
 
-        int qnt = leArquivoModo(nomeArq,"r+");
-        //Se não leu o arquivo
-        if(qnt == 0)
-        {
-            printf("Corrija o arquivo!!\n");
-        }else{
-            wait(0.5);
-            limpaPrompt();
-            printf("Inicializando operacoes ...\n");
-
-            executaInstrucoes(qnt);
-
-            printf("Operacoes finalizadas com sucesso!\n");
-        }
-
+        leInstrucoes(nomeArq);
         //Verifica se deseja ler outro arquivo
         printf("\nLer outro arquivo?(y ou n)? ");
         scanf("%c%*c",&continua);
@@ -94,6 +101,7 @@ void realizaGravacao()
         }
         while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
 
+        leInstrucoes(nomeArq);
         //Verifica se deseja gravando em outro arquivo
         printf("Gravar em outro arquivo?(y ou n)? ");
         scanf("%c%*c",&continua);
@@ -102,6 +110,9 @@ void realizaGravacao()
 
 }
 
+void resetaMem(){
+    resetaRegistradoresMemoria();
+}
 /**
 ** Função principal
 **/
@@ -121,7 +132,15 @@ int main()
         case 2:
             realizaGravacao();
             break;
-        case 3:
+        case 3:{
+            resetaMem();
+            printf("Memoria resetada!");
+            wait(0.5);
+            continua = 'y';
+            continue;
+        }
+        break;
+        case 4:
             return 0;
         default :
         {
