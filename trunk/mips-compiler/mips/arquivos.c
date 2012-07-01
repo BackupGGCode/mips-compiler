@@ -27,7 +27,7 @@ unsigned int bin2dec(char *bin)
     int len, k;
     unsigned int sum = 0,des;
     int n;
-    len =  strlen(bin) - 1;
+    len =  strlen(bin) -1;
     for(k = 0; k <= len && bin[k] != '\n' && bin[k] != '\0'; k++)
     {
         n = (bin[k] - '0'); // converte char para numero
