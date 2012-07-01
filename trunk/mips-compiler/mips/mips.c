@@ -849,7 +849,6 @@ void xori(int rs, int rt, int imm)
 **
 **/
 
-
 typedef struct st
 {
     int regDst;
@@ -863,6 +862,8 @@ typedef struct st
     int opAlu2;
     int jump;
 }controle;
+
+/*** alguém vê se essa tá certa ***/
 
 int ctrl_extend_signal(int var)
 {
@@ -878,20 +879,36 @@ int ctrl_extend_signal(int var)
     return var;
 }
 
+/*** essa eu nem sei se tá usando ***/
+
 controle zera_controle(controle ctrl)
 {
     ctrl.regDst = ctrl.origAlu = ctrl.memReg = ctrl.escReg = ctrl.leMem = ctrl.escMem = ctrl.branch = ctrl.opAlu1 = ctrl.opAlu2 = 0;
     return ctrl;
 }
 
-// desvio falta ajeitar as variáveis e os parâmetros
-void desvio(controle ctrl, int *PC)
+/*** concat == deusa gambi? xD ***/
+
+int concat(int rs, int rt, int rd, int shamt, int funct, int qt)
+{
+    int conc=0;
+    if(qt == 3) //concat rd, shamt, funct
+        conc += (rd << 11) + (shamt << 6) + funct;
+    else
+        if(qt == 5)
+            conc += (rs << 21) + (rt << 16) + (rd << 11) + (shamt << 6) + funct;
+    return conc;
+}
+
+/*** desvio falta ajeitar as variáveis e os parâmetros ***/
+
+void desvio(int rs, int rt, int rd, int shamt, int funct, int *PC)
 {
     if(ctrl.jump)
     {
         if(ctrl.branch && zeroAlu)
         {
-            *PC += 4 + ctrl_extend_signal(instruct15to0);
+            *PC += 4 + ctrl_extend_signal(concat(rs, rt, rd, shamt, funct, 3));
         }
         else
         {
@@ -900,7 +917,7 @@ void desvio(controle ctrl, int *PC)
     }
     else
     {
-        *PC = instruct25to0 << 2;
+        *PC = concat(rs, rt, rd, shamt, funct, 3) << 2;
     }
 }
 
@@ -910,10 +927,10 @@ void desvio(controle ctrl, int *PC)
 //
 //}
 
+/*** the cake is a lie... ***/
 
 int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu, int shamt)
 {
-
     int resAlu;
     *zeroAlu = 0; //inativa
     switch(ctrlAlu)
@@ -925,7 +942,7 @@ int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu, int shamt)
         {
             resAlu = rs - rt;
             if(resAlu == 0) *zeroAlu = 1; //seta ativo
-        }; break; //sub, beq.
+        }; break; //sub, beq, bne.
         case 7:
         {
             if(rs < rt)
@@ -940,7 +957,9 @@ int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu, int shamt)
     return resAlu;
 }
 
-void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc)
+/*** tá foda... ***/
+
+void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc, int *pc)
 {
     int zeroAlu=0, resAlu, ctrlAlu, dadosLeitura, dadosEscrita; //zeroAlu ativa em ALTO.
 
@@ -970,10 +989,10 @@ void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *da
             default: printf("\n\nErro no funct para controle da ALU! \n\n");
         }
     }
+
     resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu, shamt);
 
-
-    // memória de dados, em construção.
+    /*** memória de dados, em construção. ***/
 
     if(ctrl.escMem)
     {
@@ -1002,12 +1021,14 @@ void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *da
 
     //mem_dados(ctrl, resAlu, &dadosLe2);
 
-    //fim da memória de dados, em construção.
+    /** fim da memória de dados, em construção. ***/
 
-    desvio(ctrl, PC); //falta acertar quem é PC.
+    desvio(rs, rt, rd, shamt, funct, &pc);
 }
 
-void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
+/*** tá mto foda... ***/
+
+void controle(int opcode, int rs, int rt, int rd, int shamt, int funct, int *pc)
 {
     int op5, op4, op3, op2, op1, op0, opatual;
     controle ctrl;
@@ -1023,11 +1044,9 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
 
     /** ESSA PARTE ABAIXO TÁ BEM INCOMPLETA AINDA, mas o caminho parece ser esse **/
 
-    if(op5 == 0) //R, beq, bne
-    {
-        if(op4 == 0)
-        {
-            if(op2 == 0)
+    if(op5 == 0){ //R, beq, bne, j, jal, addi
+        if(op4 == 0){
+            if(op2 == 0){
                 if(op1 == 0)
                     ctrl.regDst=ctrl.escReg=ctrl.opAlu1=1; //R
                 else
@@ -1035,26 +1054,26 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
                         ; //jal
                     else
                         ; //j
-            else //op2 == 1
-            {
+            } //op2
+            else{
                 if(op0 == 0)
                     ctrl.branch=ctrl.opAlu2=1; //beq
                 else
                     ; //bne QUAIS SÃO OS DADOS DE CONTROLE AQUI?
-            }
-        }
+            } //op2 else
+        } //op4
         else //op4 == 1
         {
             if(op0 == 1)
-                ; //addi
-        }
-    }
+                ; //addi E AQUI?
+        } //op4 else
+    } //op5
     else //lw ou sw
-    {
-        if(op3 == 0) ctrl.origAlu=ctrl.memReg=ctrl.escReg=ctrl.leMem=1; //lw
-        else ctrl.origAlu=ctrl.escMem=1; //sw
-    }
-    regist(ctrl, rs, rt, rd, shamt, funct, &dadosLe1, &dadosLe2, &dadosEsc);
+        if(op3 == 0)
+            ctrl.origAlu = ctrl.memReg = ctrl.escReg = ctrl.leMem = 1; //lw
+        else
+            ctrl.origAlu = ctrl.escMem=1; //sw
+    regist(ctrl, rs, rt, rd, shamt, funct, &dadosLe1, &dadosLe2, &dadosEsc, &pc);
 }
 
 /**
@@ -1062,7 +1081,6 @@ void controle(int opcode, int rs, int rt, int rd, int shamt, int funct)
 ** FIM dasfunções de controle da ALU, em construção.
 **
 **/
-
 
 /**
 ** Procedimento que executa uma quantidade de intruções MIPS(qntInstrucoes)
