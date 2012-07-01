@@ -13,6 +13,7 @@
 char* nomeArquivo = "log.trojan";   // Nome do arquivo de log
 char* modoGravacao = "a";           // Tipo de abertura do arquivo
 int operacaoAtual;                  // Valor da operacao atual(serve para a gravacao)
+unsigned int HI,LO;
 
 /***************************************************************************************/
 /********************************* Estruturas do MIPS **********************************/
@@ -296,27 +297,67 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     strcat(retorno,"\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,retorno);
     imprimeRegistradores();
-    printf("%s\n",retorno);
+    printf("%d\t%s\n",PC,retorno);
 }
 
-void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target){
-    switch(operacaoAtual){
-        case 0: recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
-        case 1: recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);    break;
-        case 2: recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
-        case 3: recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);                           break;
-        case 4: recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);                            break;
-        case 5: recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),"",shamt,0);                         break;
-        case 6: recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
-        case 7: recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
-        case 8: recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1);                                                      break;
-        case 9: recuperaOperacao("j","","","",target,0);                                                                            break;
-        case 10: recuperaOperacao("jal","","","",target,0);                                                                         break;
-        case 11: recuperaOperacao("beq",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);                       break;
-        case 12: recuperaOperacao("bne",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);                       break;
-        case 13: recuperaOperacao("addi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);                         break;
-        case 14: recuperaOperacao("lw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);                        break;
-        case 15: recuperaOperacao("sw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);                        break;
+void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target)
+{
+    switch(operacaoAtual)
+    {
+    case 0:
+        recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        break;
+    case 1:
+        recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        break;
+    case 2:
+        recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        break;
+    case 3:
+        recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
+        break;
+    case 4:
+        recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
+        break;
+    case 5:
+        recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),"",shamt,0);
+        break;
+    case 6:
+        recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        break;
+    case 7:
+        recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        break;
+    case 8:
+        recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1);
+        break;
+    case 9:
+        recuperaOperacao("j","","","",target,0);
+        break;
+    case 10:
+        recuperaOperacao("jal","","","",target,0);
+        break;
+    case 11:
+        recuperaOperacao("beq",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        break;
+    case 12:
+        recuperaOperacao("bne",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        break;
+    case 13:
+        recuperaOperacao("addi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        break;
+    case 14:
+        recuperaOperacao("lw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
+        break;
+    case 15:
+        recuperaOperacao("sw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
+        break;
+    case 16:
+        recuperaOperacao("mfhi",recuperaNomeRegistrador(rd),"","",0,-1);
+        break;
+    case 17:
+        recuperaOperacao("mflo",recuperaNomeRegistrador(rd),"","",0,-1);
+        break;
     }
 }
 /***************************************************************************************/
@@ -330,8 +371,9 @@ void atualiza_PC(int deslocamento,int mutex)
 {
     PC = PC + 4/4;//pois é um inteiro
     deslocamento += PC;
-    if(mutex == 1){
-        PC = abs(deslocamento >> 17);
+    if(mutex == 1)
+    {
+        PC = abs(deslocamento >> 16);
     }
 }
 
@@ -386,7 +428,17 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
     case 2:
         aluControle.retornoAlu = registrador1 + registrador2;
         break; //add.
-     case 5:
+    case 3:{
+        HI = registrador1 * registrador2;
+        LO = registrador1 * registrador2;
+    }
+        break; //mult
+    case 4:{
+        HI = registrador1 % registrador2;
+        LO = registrador1 / registrador2;
+    }
+        break; //div
+    case 5:
         aluControle.retornoAlu = registrador1 << registrador2;
         break; //sub.
     case 6:
@@ -439,55 +491,67 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
             funct -= op1 << 1;
             op0 = funct;
             if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
-                (op2 == 0) && (op1 == 0) && (op0 == 0))//sll
+                    (op2 == 0) && (op1 == 0) && (op0 == 0))//sll
             {
                 ctrlAlu = 5;
                 operacaoAtual = 5;
             }
             if((op5 == 0) && (op4 == 0) && (op3 == 1) &&
-                (op2 == 0) && (op1 == 0) && (op0 == 0))//jr
+                    (op2 == 0) && (op1 == 0) && (op0 == 0))//jr
             {
                 //ctrlAlu = 8;
                 operacaoAtual = 8;
             }
-            if((op5 == 0) && (op4 == 1) && (op3 == 1) &&
-                (op2 == 0) && (op1 == 0) && (op0 == 0))//mult
+            if((op5 == 0) && (op4 == 1) && (op3 == 0) &&
+                    (op2 == 0) && (op1 == 0) && (op0 == 0))//mfhi
             {
-                //ctrlAlu = 3;
+                ctrlAlu = 16;
+                operacaoAtual = 16;
+            }
+            if((op5 == 0) && (op4 == 1) && (op3 == 0) &&
+                    (op2 == 0) && (op1 == 1) && (op0 == 0))//mflo
+            {
+                ctrlAlu = 17;
+                operacaoAtual = 17;
+            }
+            if((op5 == 0) && (op4 == 1) && (op3 == 1) &&
+                    (op2 == 0) && (op1 == 0) && (op0 == 0))//mult
+            {
+                ctrlAlu = 3;
                 operacaoAtual = 3;
             }
             if((op5 == 0) && (op4 == 1) && (op3 == 1) &&
-                (op2 == 0) && (op1 == 1) && (op0 == 0))//div
+                    (op2 == 0) && (op1 == 1) && (op0 == 0))//div
             {
-                //ctrlAlu = 4;
+                ctrlAlu = 4;
                 operacaoAtual = 4;
             }
             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
-                (op2 == 0) && (op1 == 0) && (op0 == 0))//add
+                    (op2 == 0) && (op1 == 0) && (op0 == 0))//add
             {
                 ctrlAlu = 2;
                 operacaoAtual = 2;
             }
             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
-                (op2 == 0) && (op1 == 1) && (op0 == 0))//sub
+                    (op2 == 0) && (op1 == 1) && (op0 == 0))//sub
             {
                 ctrlAlu = 6;
                 operacaoAtual = 6;
             }
             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
-                (op2 == 1) && (op1 == 0) && (op0 == 0))//and
+                    (op2 == 1) && (op1 == 0) && (op0 == 0))//and
             {
                 ctrlAlu = 0;
                 operacaoAtual = 0;
             }
             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
-                (op2 == 1) && (op1 == 0) && (op0 == 1))//or
+                    (op2 == 1) && (op1 == 0) && (op0 == 1))//or
             {
                 ctrlAlu = 1;
                 operacaoAtual = 1;
             }
             if((op5 == 1) && (op4 == 0) && (op3 == 1) &&
-                (op2 == 0) && (op1 == 1) && (op0 == 0))//slt
+                    (op2 == 0) && (op1 == 1) && (op0 == 0))//slt
             {
                 ctrlAlu = 7;
                 operacaoAtual = 7;
@@ -813,8 +877,8 @@ Funcoes testadas:
 addi    ----> ok
 add     ----> ok
 sub     ----> ok
-mult    ---->
-div     ---->
+mult    ----> ok
+div     ----> ok
 and     ----> ok
 or      ----> ok
 slt     ----> ok
@@ -822,7 +886,7 @@ sll     ----> ok
 lw      ---->
 sw      ---->
 beq     ---->
-bne     ----> +/- devido ao deslocamento
+bne     ---->
 j       ---->
 jr      ---->
 jal     ---->
@@ -830,7 +894,7 @@ jal     ---->
 /**
 ** Procedimento que executa uma quantidade de intruções MIPS(qntInstrucoes)
 **/
-void executaInstrucoes(int qntInstrucoes)
+void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 {
     imprimeCabecalho();
 
@@ -891,54 +955,89 @@ void executaInstrucoes(int qntInstrucoes)
 
         /** Carrega os dados para a ALU **/
         entradaAlu1 = reg[parte_25_21];
-        if(controle.origAlu == 0){
-            if(controle.ctrlAlu == 5){//sll
+        if(controle.origAlu == 0)
+        {
+            if(controle.ctrlAlu == 5) //sll
+            {
                 entradaAlu2 = parte_10_6;
-            }else{
-                entradaAlu2 = reg[parte_20_16];
             }
-        }else{
-            entradaAlu2 = parte_15_0_extendido;
+            else
+            {
+                if(controle.ctrlAlu == 16) //mghi
+                {
+                    entradaAlu1 = 0;
+                    entradaAlu2 = HI;
+                    controle.ctrlAlu = 2;
+                }
+                else
+                {
+                    if(controle.ctrlAlu == 17) //mglo
+                    {
+                        entradaAlu1 = 0;
+                        entradaAlu2 = LO;
+                        controle.ctrlAlu = 2;
+                    }
+                    else
+                    {
+                        entradaAlu2 = reg[parte_20_16];
+                    }
+                }
+            }
+        }
+        else
+        {
+            entradaAlu2 = parte_15_0;
         }
 
         /** calcula os valores na ALU **/
         unidadeLogica = executaAlu(entradaAlu1,entradaAlu2,controle.ctrlAlu);
 
         /** Verifica se é branch equal */
-        if(controle.branchEq == 1){
-            if(unidadeLogica.zeroAlu == 1){//toma desvio
+        if(controle.branchEq == 1)
+        {
+            if(unidadeLogica.zeroAlu == 1) //toma desvio
+            {
                 salto = 1;
             }
         }
 
-         /** Verifica se é branch not equal */
-        if(controle.branchNotEq == 1){
-            if(unidadeLogica.zeroAlu == 0){//toma desvio
+        /** Verifica se é branch not equal */
+        if(controle.branchNotEq == 1)
+        {
+            if(unidadeLogica.zeroAlu == 0) //toma desvio
+            {
                 salto = 1;
             }
         }
 
-        if(controle.escreveMem == 1){//faz o sw
+        if(controle.escreveMem == 1) //faz o sw
+        {
             //entradaAlu2 e unidadeLogica.retornoAlu
         }
 
         /** Verifica o que é gravado no banco de registradors **/
-        if(controle.memParaReg == 0){//resultado alu
+        if(controle.memParaReg == 0) //resultado alu
+        {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
-        }else{//lw
+        }
+        else  //lw
+        {
 
         }
 
-         /** Verifica se pode gravar no registrador **/
-        if(controle.escreveReg == 1){
-            /** Define o registrador de destino a ser gravado **/
-            if(controle.regDst == 0)
-            {
-                reg[parte_20_16] = valorGravarRegistradores;
-            }
-            else
-            {
-                reg[parte_15_11] = valorGravarRegistradores;
+        /** Verifica se pode gravar no registrador **/
+        if(controle.escreveReg == 1)
+        {
+            if(controle.ctrlAlu != 3 && controle.ctrlAlu != 4){
+                /** Define o registrador de destino a ser gravado **/
+                if(controle.regDst == 0)
+                {
+                    reg[parte_20_16] = valorGravarRegistradores;
+                }
+                else
+                {
+                    reg[parte_15_11] = valorGravarRegistradores;
+                }
             }
         }
 
@@ -948,6 +1047,18 @@ void executaInstrucoes(int qntInstrucoes)
         /** Incrimenta PC **/
         atualiza_PC(parte_15_0_extendido << 2,salto);
 
+        if(modoExecucao == 1){
+            getchar();
+        }
     }
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n\n------------------------------Fim da gravacao------------------------------\n\n");
+}
+
+void resetaRegistradoresMemoria(){
+    int i;
+    for(i=0;i<32;i++){
+        reg[i] = 0;
+    }
+    HI=0;
+    LO=0;
 }
