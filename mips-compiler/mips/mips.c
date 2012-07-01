@@ -5,12 +5,350 @@
 #include "arquivos.h"
 #include "mips.h"
 
+Victor: aew
+blz?
+
+
+Victor UF está ocupado.
+Diego: s e vc?
+
+
+Victor: tbm
+fechou a prova?
+
+
+Diego: nao to conseguindo acessar o siga
+e vc como foi?
+
+
+Victor: D:
+90 ^^
+de novo
+
+
+Diego: que blz
+
+
+Victor: já vai pegar o trab pra ver?
+
+
+Diego: ja to olhando
+
+
+Victor: tá
+tipow
+de onde a gente vai tirar os controles pras instruções q n tem? :P
+
+
+Diego: to vendo a extend sinal q ta escrito para testa-la
+to fazendo o teste
+agente vai ter que cria a logica
+
+
+Enviado - 09:46, domingo
+Diego: aki v c vc consegu acessar o siga dai
+
+
+Victor: vo ver
+peraí
+n ^^
+
+
+Diego: eu acho que sit da uf tb ta fora do ar
+
+
+Victor: o site entrou de greve D:
+
+
+Diego: XD
+serio ?
+
+
+Victor: ueawUheawuheaw
+to zuando pow ^^
+
+
+Enviado - 09:52, domingo
+Victor: cara, tem mta coisa na parte q eu fiz q eu só "botei a ideia" ou meio q "chutei" o jeito q seria feito mesmo D:
+não cheguei a testar nada
+
+
+Diego: entao u to olhando isso
+to fazendo uns testes fake
+e vendo como ta
+
+
+Victor: qualquer coisa q sair MUITO BIZARRA não é mera coincidência ^^
+
+
+Diego: blz
+
+
+Enviado - 09:56, domingo
+Diego: aki podemos padronizar os noms das funcoes?
+
+
+Victor: y
+
+
+Diego: tipow ou tudo em pt ou en
+
+
+Victor: de baixo pra cima......
+controle mantém controle?
+
+
+Diego: s
+
+
+Victor: regist vira "registro"?
+
+
+Diego: s
+
+
+Victor: alu vira ula?
+ou deixa alu?
+
+
+Diego: deixa
+
+
+Victor: desvio mantém?
+
+
+Diego: s
+
+
+Victor: concat vira concatena?
+
+
+Diego: s
+
+
+Victor: zera_controle [q nem sei se usa] mantém?
+
+
+Diego: por enquano s
+*enquanto
+
+
+Victor: ctrl_extend_signal >> ctrl_extende_sinal?
+
+
+Diego: extende_sinal
+
+
+Victor: GG?
+
+
+Diego: y
+
+
+Victor: xD
+
+
+Diego: testei a extende sinal
+arrumei um ngocio so
+*negocio
+
+
+Victor: o q era?
+
+
+Diego: var >> 16 virou var >> 15
+var >> 16 == o 17 bit a sr olhado
+
+
+Victor: ahh tah
+i começa de de qto?
+
+
+Diego: 16
+
+
+Victor: blz
+arrumado ^^
+funciona? :P
+
+
+Diego: s
+
+
+Victor: good
+zera_controle, se for usar, tem q atualizar algumas coisas
+q eu modifiquei a struct
+
+
+Enviado - 10:06, domingo
+Diego: o concatena é para o que?
+
+
+Victor: juntar as partes da instrução de novo pra ter os endereços de desvio
+tipow...... o jump precisa dos 26 bits à direita concatenados, preciso juntar o q a gente tá chamando de rs, rt, rd, shamt e funct pra fazer o endereço
+por exemplo
+sacou?
+
+
+Diego: s
+olha esse site
+http://www.ece.lsu.edu/alex/EE3755/fall09/control.htm
+ele tem os controles da alu desenvolvidos
+ele usa 3 bits
+
+
+Victor: good =o
+working on it ^^
+
+
+Diego: ok
+
+
+Victor: vish
+uhewahuewHUeaw
+opalu é o mesmo pra BEQ e BNE....... vai ter q tratar por fora mesmo :P
+
+
+Diego: aham
+a alu nao sabe o qu acontcendo n
+ela so faz o qu passa para ela
+
+
+Victor: uhum
+
+
+Diego: XD
+
+
+Enviado - 10:42, domingo
+Victor: tipow
+por esse site o BEQ e o BNE fazer o opalu ser 8, mas a operação é um SUB
+
+
+Diego: mas é isso
+
+
+Victor: no q eu tinha feito antes o sub era um 6
+
+
+Diego: seta o valor no registrador 0
+
+
+Victor: O.o
+
+
+Diego: nao no registrador zero e sim no zero alu
+
+
+Victor: :P
+
+
+Diego: typedef struct
+{
+int zeroAlu;
+int retornoAlu;
+}ALU;
+/** Função ALU
+** Parametros:
+aluControle --> onde tera o retorno
+registrador1 --> primeira entrada da ALU
+registrador2 --> segunda entrada da ALU
+ctrlAlu --> indica qual operacao a realizar
+000 AND
+001 OR
+010 SLT
+011 ADD
+100 SUB
+**/
+void alu(ALU *aluControle,int registrador1, int registrador2, int ctrlAlu)
+{
+int resAlu;
+*aluControle.zeroAlu = (registrador1 - registrador2 == 0)? 1 : 0;
+switch(ctrlAlu)
+{
+case 0: *aluControle.retornoAlu = registrador1 & registrador2; break; //and.
+case 1: *aluControle.retornoAlu = registrador1 | registrador2; break; //or.
+case 2: *aluControle.retornoAlu = (registrador1 < registrador2)? 1 : 0; break; //slt.
+case 3: *aluControle.retornoAlu = registrador1 + registrador2; break; //add.
+case 4: *aluControle.retornoAlu = registrador1 - registrador2; break; //sub.
+default: printf("\n\nErro de controle da ALU! \n\n");
+}
+}
+
 /***************************************************************************************/
 /********************************* Variaveis Globais ***********************************/
 /***************************************************************************************/
 
 char* nomeArquivo = "log.trojan";   // Nome do arquivo de log
 char* modoGravacao = "a";           // Tipo de abertura do arquivo
+int operacaoAtual;                  // Valor da operacao atual(serve para a gravacao)
+
+/***************************************************************************************/
+/********************************* Estruturas do MIPS **********************************/
+/***************************************************************************************/
+
+/**
+** Estrutura do Controle
+**/
+typedef struct
+{
+    /** Controla o Registrador para Escrita                         */
+    /**     Se 0 -- > vem de [20:16]                                */
+    /**     Se 1 -- > vem de [15:11]                                */
+    int regDst;
+
+    /** Controla a segunda entradas para a ALU                      */
+    /**     Se 0 -- > vem do banco de registradores                 */
+    /**     Se 1 -- > vem do sinal estendido                        */
+    int origAlu;
+
+    /** Controla a origm do PC                                      */
+    /**     Se 0 -- > PC = PC + 4                                   */
+    /**     Se 1 -- > PC = desvio                                   */
+    int origPC;
+
+    /** Controla onde o Valor lido de “Endereço” é colocado         */
+    /**     Se 0 -- > nenhum lugar                                  */
+    /**     Se 1 -- > colocado em “Dados da Leitura”                */
+    int leMem;
+
+    /** Controla de onde o Valor de “Dados para Escrita”            */
+    /**     Se 0 -- > vem da ALU                                    */
+    /**     Se 1 -- > vem da memória de dados                       */
+    int memParaReg;
+
+    /** Controla qual o Valor do “Registrador para Escrita”         */
+    /**     Se 0 -- > nenhum                                        */
+    /**     Se 1 -- > valor de “Dados para Escrita”                 */
+    int escreveReg;
+
+    /** Controla onde o Valor de “Dados para Escrita” é colocado   */
+    /**     Se 0 -- > nenhum lugar                                  */
+    /**     Se 1 -- > colocado em “Endereço”                        */
+    int escreveMem;
+
+    int branchEq;
+    int branchNotEq;
+    int opAlu1;
+    int opAlu0;
+    int jump;
+
+    int ctrlAlu;
+} Controle;
+
+/**
+** Estrutura da ALU
+**/
+typedef struct
+{
+    /** Verifica se a diferença das entradas é 0                    */
+    /**     Se 0 -- > a diferença dos registradores não é 0         */
+    /**     Se 1 -- > a diferença dos registradores é 0             */
+    int zeroAlu;
+
+    /** Valor do retorno da ALU                                     */
+    int retornoAlu;
+} ALU;
 
 
 /***************************************************************************************/
@@ -110,20 +448,24 @@ char* recuperaOffset(int offset)
 /**
 ** Função que completa o vetor de caracter texto ate tam espacos
 **/
-void completaComEspacos(char* texto,int tam){
+void completaComEspacos(char* texto,int tam)
+{
     int i,tamTxt = strlen(texto);
-    if(tamTxt >= tam){
-    return;
+    if(tamTxt >= tam)
+    {
+        return;
     }
-    for(i= tamTxt;i<=tam;i++){
+    for(i= tamTxt; i<=tam; i++)
+    {
         strcat(texto," ");
     }
 }
 
 /**
-** Função para imprimir o cabeçalho do arquivo de lo
+** Função para imprimir o cabeçalho do arquivo de log
 **/
-void imprimeCabecalho(){
+void imprimeCabecalho()
+{
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n------------------------------Inicio da execucao------------------------------\n\n");
     int i;
     gravaArquivoModo(nomeArquivo,modoGravacao,"Operacao//Registradores\tPC\t");
@@ -168,42 +510,56 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     char retorno[20];
     strcpy(retorno,ope);
     strcat(retorno," ");
-    switch(posOffset){
-        case -1:{
-            if(strcmp(r0,"") > 0){
-                strcat(retorno,r0);
-            }
-            if(strcmp(r1,"") > 0){
-                strcat(retorno,", ");
-                strcat(retorno,r1);
-            }
-            if(strcmp(r2,"") > 0){
-                strcat(retorno,", ");
-                strcat(retorno,r2);
-            }
-        }break;
-        case 0:{
-            if(strcmp(r0,"") > 0){
-                strcat(retorno,r0);
-                strcat(retorno,", ");
-            }
-            if(strcmp(r1,"") > 0){
-                strcat(retorno,r1);
-                strcat(retorno,", ");
-            }
-            strcat(retorno,recuperaOffset(offset));
-        }break;
-        case 1:{
+    switch(posOffset)
+    {
+    case -1:
+    {
+        if(strcmp(r0,"") > 0)
+        {
+            strcat(retorno,r0);
+        }
+        if(strcmp(r1,"") > 0)
+        {
+            strcat(retorno,", ");
+            strcat(retorno,r1);
+        }
+        if(strcmp(r2,"") > 0)
+        {
+            strcat(retorno,", ");
+            strcat(retorno,r2);
+        }
+    }
+    break;
+    case 0:
+    {
+        if(strcmp(r0,"") > 0)
+        {
             strcat(retorno,r0);
             strcat(retorno,", ");
-            strcat(retorno,recuperaOffset(offset));
-            strcat(retorno,"(");
+        }
+        if(strcmp(r1,"") > 0)
+        {
             strcat(retorno,r1);
-            strcat(retorno,")");
-        }break;
-        case 2:{
-            strcat(retorno,recuperaOffset(offset));
-        }break;
+            strcat(retorno,", ");
+        }
+        strcat(retorno,recuperaOffset(offset));
+    }
+    break;
+    case 1:
+    {
+        strcat(retorno,r0);
+        strcat(retorno,", ");
+        strcat(retorno,recuperaOffset(offset));
+        strcat(retorno,"(");
+        strcat(retorno,r1);
+        strcat(retorno,")");
+    }
+    break;
+    case 2:
+    {
+        strcat(retorno,recuperaOffset(offset));
+    }
+    break;
     }
     completaComEspacos(retorno,20);
     strcat(retorno,"\t");
@@ -211,6 +567,30 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     imprimeRegistradores();
     printf("%s\n",retorno);
 }
+
+void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target){
+    switch(operacaoAtual){
+        case 0: recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
+        case 1: recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);    break;
+        case 2: recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
+        case 3: recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);                           break;
+        case 4: recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);                            break;
+        case 5: recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),"",shamt,0);                         break;
+        case 6: recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
+        case 7: recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);   break;
+        case 8: recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1);                                                      break;
+        case 9: recuperaOperacao("j","","","",target,0);                                                                            break;
+        case 10: recuperaOperacao("jal","","","",target,0);                                                                         break;
+        case 11: recuperaOperacao("beq",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,0);                       break;
+        case 12: recuperaOperacao("bne",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,0);                       break;
+        case 13: recuperaOperacao("addi",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,0);                         break;
+        case 14: recuperaOperacao("lw",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,1);                        break;
+        case 15: recuperaOperacao("sw",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,1);                        break;
+    }
+}
+/***************************************************************************************/
+/************************************** Metodos ****************************************/
+/***************************************************************************************/
 
 /**
 ** Função para avancar o PC
@@ -220,655 +600,18 @@ void advance_pc (int offset)
     PC = PC + (offset)/4;
 }
 
-
-
-/***************************************************************************************/
-/************************** Rotinas relativas às instruções ****************************/
-/***************************************************************************************/
-
-/**********************************************************************************/
-/************************ INÍCIO DAS INSTRUÇÕES DO TIPO R *************************/
-/**********************************************************************************/
-
-/** Funcao add (com overflow)
-** add $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100000
-** rs = rt + rd
+/** Funcao de Extensão de Sinal do Deslocamento
+** Se for negativo, 16 bits superiores = 1
+** Se for positivo, 16 bits superiores = 0
+** Parametro:
+      unsigned int var --> numero a ser extendido
+** Retorno
+    unsigned int
 **/
-void add(int rs, int rt, int rd)
-{
-    recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    reg[rs] = reg[rt] + reg[rd];
-    advance_pc (4);
-}
-
-/** Funcao add unsigned (sem overflow)
-** addu $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100001
-** rs = rt + rd
-**/
-void addu(int rs, int rt, int rd)
-{
-    recuperaOperacao("addu",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise and
-** and $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100100
-** $d = $s & $t;
-**/
-void and_(int rs, int rt, int rd)
-{
-    recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Divide
-** div $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   00000   00000   011010
-** ?
-**/
-void div_(int rs, int rt)
-{
-    //$LO = $s / $t; $HI = $s % $t;
-   recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
-   advance_pc (4);
-}
-
-/** Funcao Divide unsigned
-** divu $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   00000   00000   011011
-** ?
-**/
-void divu(int rs, int rt)
-{
-    //$LO = $s / $t; $HI = $s % $t;
-   recuperaOperacao("divu",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
-   advance_pc (4);
-}
-
-/** Funcao Jump register
-** jr $s
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   00000   00000   00000   001000
-** ?
-**/
-void jr(int rs)
-{
-    //PC = nPC; nPC = $s;
-    recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Move from HI
-** mfhi $d
-** opcode   rs       rt       rd    shamt    func
-** 000000   00000   00000    ddddd  00000    010000
-** ?
-**/
-void mfhi(int rd)
-{
-    //	$d = $HI;
-    recuperaOperacao("mfhi",recuperaNomeRegistrador(rd),"","",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Move from LO
-** mflo $d
-** opcode   rs       rt       rd    shamt    func
-** 000000   00000   00000    ddddd  00000   010010
-** ?
-**/
-void mflo(int rd)
-{
-    //	$d = $LO;
-   recuperaOperacao("mflo",recuperaNomeRegistrador(rd),"","",0,-1);
-   advance_pc (4);
-}
-
-/** Funcao Multiply
-** mult $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   00000   00000   011000
-** ?
-**/
-void mult(int rs, int rt)
-{
-    //$LO = $s * $t; advance_pc (4);
-    // reg[rs] = reg[rt] * reg[rd];
-    recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Multiply unsigned
-** multu $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   00000   00000   011001
-** ?
-**/
-void multu(int rs, int rt)
-{
-    //$LO = $s * $t;
-    recuperaOperacao("multu",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao no operation
-** noop
-** opcode   rs       rt       rd    shamt    func
-** 000000   00000    00000   00000  00000   000000
-** ?
-**/
-void noop()
-{
-    //vazio mesmo, eu acho :P
-    recuperaOperacao("noop","","","",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise or
-** or $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100101
-** $d = $s | $t;
-**/
-void or_(int rs, int rt, int rd)
-{
-    //$d = $s | $t;
-    recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Shift left logical
-** sll $d, $t, h
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   hhhhh   000000
-** ?
-**/
-void sll(int rt, int rd, int shamt)
-{
-    //	$d = $t << h;
-   recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),"",shamt,0);
-   advance_pc (4);
-}
-
-/** Funcao Shift left logical variable
-** sllv $d, $t, $s
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   -----   000100
-** ?
-**/
-void sllv(int rs, int rt, int rd)
-{
-    //	$d = $t << $s;
-    recuperaOperacao("sllv",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Set on less than (signed)
-** slt $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   101010
-** ?
-**/
-void slt(int rs, int rt, int rd)
-{
-    //if $s < $t $d = 1; advance_pc (4); else $d = 0; advance_pc (4);
-   recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-   advance_pc (4);
-}
-
-/** Funcao Set on less than unsigned
-** sltu $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   101011
-** ?
-**/
-void sltu(int rs, int rt, int rd)
-{
-    //if $s < $t $d = 1; advance_pc (4); else $d = 0; advance_pc (4);
-    recuperaOperacao("sltu",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Shift right arithmetic
-** sra $d, $t, h
-** opcode   rs       rt       rd    shamt    func
-** 000000   -----   ttttt   ddddd   hhhhh   000011
-** ?
-**/
-void sra(int rt, int rd, int shamt)
-{
-    //	$d = $t >> h;
-    recuperaOperacao("sra",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),"",shamt,0);
-    advance_pc (4);
-}
-
-/** Funcao Shift right logical
-** srl $d, $t, h
-** opcode   rs       rt       rd    shamt    func
-** 000000   -----   ttttt   ddddd   hhhhh   000010
-** ?
-**/
-void srl(int rt, int rd, int shamt)
-{
-    //	$d = $t >> h;
-   recuperaOperacao("srl",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),"",shamt,0);
-   advance_pc (4);
-}
-
-/** Funcao Shift right logical variable
-** srlv $d, $t, $s
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   000110
-** ?
-**/
-void srlv(int rs, int rt, int rd)
-{
-    //	$d = $t >> $s;
-    recuperaOperacao("srlv",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Subtract
-** sub $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100010
-** rs = rt - rd
-**/
-void sub(int rs, int rt, int rd)
-{
-    //reg[rs] = reg[rt] - reg[rd];
-    recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Subtract unsigned
-** subu $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   00000   100011
-** rs = rt - rd
-**/
-void subu(int rs, int rt, int rd)
-{
-    //reg[rs] = reg[rt] - reg[rd];
-    recuperaOperacao("subu",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-    advance_pc (4);
-}
-
-/** Funcao System call
-** syscall
-** opcode   rs       rt       rd    shamt    func
-** 000000   -----   -----   -----   -----   001100
-** rs = rt - rd
-**/
-void syscall()
-{
-    recuperaOperacao("syscall","","","",0,-1);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise exclusive or
-** xor $d, $s, $t
-** opcode   rs       rt       rd    shamt    func
-** 000000   sssss   ttttt   ddddd   -----   100110
-** $d = $s ^ $t
-**/
-void xor_(int rs, int rt, int rd)
-{
-    //$d = $s ^ $t; advance_pc (4);
-   recuperaOperacao("xor",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
-   advance_pc (4);
-}
-
-/**********************************************************************************/
-/************************ INÍCIO DAS INSTRUÇÕES DO TIPO J *************************/
-/**********************************************************************************/
-
-/** Funcao Jump
-** j target
-** opcode         targetif(reg[rs] - reg[rt]!= 0)
-    {
-        advance_pc(4 + 4*offset);
-    }
-    else
-        advance_pc(4);
-** 000010   iiiiiiiiiiiiiiiiiiiiiiiiii
-** ?
-**/
-void j(int target)
-{
-    //PC = nPC; nPC = (PC & 0xf0000000) | (target << 2);
-    recuperaOperacao("j","","","",target,0);
-    int v = (PC >> 28);
-    PC = (v << 28) + (target << 2);
-    advance_pc (4);
-}
-
-/** Funcao Jump and link
-** jal target
-** opcode         target
-** 000011   iiiiiiiiiiiiiiiiiiiiiiiiii
-** and stores the return address in $31
-**/
-void jal(int target)
-{
-    //$31 = PC + 8 (or nPC + 4); PC = nPC; nPC = (PC & 0xf0000000) | (target << 2);
-    recuperaOperacao("jal","","","",target,0);
-    reg[31] = PC;
-    int v = (PC >> 28);
-    PC = (v << 28) + (target << 2);
-    advance_pc (4);
-}
-
-/**********************************************************************************/
-/************************ INÍCIO DAS INSTRUÇÕES DO TIPO I *************************/
-/**********************************************************************************/
-
-/** Funcao add immediate(com overflow)
-** addi $t, $s, imm
-** opcode   rs       rt          imm
-** 001000   sssss   ttttt   iiiiiiiiiiiiiiii
-** rs = rt + imm
-**/
-void addi(int rs,int rt,int imm)
-{
-    recuperaOperacao("addi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    reg[rs] = reg[rt] + imm;
-    advance_pc (4);
-}
-
-/** Funcao add immediate unsigned (sem overflow)
-** addiu $t, $s, imm
-** opcode   rs       rt          imm
-** 001001   sssss   ttttt   iiiiiiiiiiiiiiii
-** rs = rt + imm
-**/
-void addiu(int rs,int rt, int imm)
-{
-    recuperaOperacao("addiu",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise and immediate
-** andi $t, $s, imm
-** opcode   rs       rt          imm
-** 001100   sssss   ttttt   iiiiiiiiiiiiiiii
-** $t = $s & imm
-**/
-void andi(int rs, int rt, int imm)
-{
-    recuperaOperacao("andi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on equal
-** beq $s, $t, offset
-** opcode   rs       rt          offset
-** 000100   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void beq(int rs, int rt, int offset)
-{
-    //if $s == $t advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("beq",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,0);
-    if(reg[rs] - reg[rt] == 0)
-    {
-        advance_pc(4 + 4*offset);
-    }
-    else
-        advance_pc(4);
-}
-
-/** Funcao Branch on greater than or equal to zero
-** bgez $s, offset
-** opcode   rs       rt          offset
-** 000001   sssss   00001   iiiiiiiiiiiiiiii
-** ?
-**/
-void bgez(int rs, int offset)
-{
-    //if $s >= 0 advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("bgez",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on greater than or equal to zero and link
-** bgezal $s, offset
-** opcode   rs       rt          offset
-** 000001   sssss   10001   iiiiiiiiiiiiiiii
-** and saves the return address in $31
-**/
-void bgezal(int rs, int offset)
-{
-    //if $s >= 0 $31 = PC + 8 (or nPC + 4); advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("bgezal",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on greater than zero
-** bgtz $s, offset
-** opcode   rs       rt          offset
-** 000111   sssss   00000   iiiiiiiiiiiiiiii
-** ?
-**/
-void bgtz(int rs, int offset)
-{
-    //if $s > 0 advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("bgtz",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on less than or equal to zero
-** blez $s, offset
-** opcode   rs       rt          offset
-** 000110   sssss   00000   iiiiiiiiiiiiiiii
-** ?
-**/
-void blez(int rs, int offset)
-{
-    //if $s <= 0 advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("blez",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on less than zero
-** bltz $s, offset
-** opcode   rs       rt          offset
-** 000001   sssss   00000   iiiiiiiiiiiiiiii
-** ?
-**/
-void bltz(int rs, int offset)
-{
-    //if $s < 0 advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("bltz",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on less than zero and link
-** bltzal $s, offset
-** opcode   rs       rt          offset
-** 000001   sssss   10000   iiiiiiiiiiiiiiii
-** and saves the return address in $31
-**/
-void bltzal(int rs, int offset)
-{
-    //if $s < 0 $31 = PC + 8 (or nPC + 4); advance_pc (offset << 2)); else advance_pc (4);
-    recuperaOperacao("bltzal",recuperaNomeRegistrador(rs),"","",offset,0);
-    advance_pc (4);
-}
-
-/** Funcao Branch on not equal
-** bne $s, $t, offset
-** opcode   rs       rt          offset
-** 000101   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void bne(int rs, int rt, int offset)
-{
-    //if $s != $t advance_pc (offset << 2)); else advance_pc (4);
-    //printf("rs = %d\trt = %d\toff: %d\n",reg[rs],reg[rt],offset);
-    recuperaOperacao("bne",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",offset,0);
-    if(reg[rs] - reg[rt]!= 0)
-    {
-        advance_pc(4 + 4*offset);
-    }
-    else
-        advance_pc(4);
-}
-
-/** Funcao Load byte
-** lb $t, offset($s)
-** opcode   rs       rt          offset
-** 100000   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void lb(int rs, int rt, int offset)
-{
-    //$t = MEM[$s + offset]; advance_pc (4);
-    recuperaOperacao("lb",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
-    advance_pc (4);
-}
-
-/** Funcao Load upper immediate
-** lui $t, imm
-** opcode   rs       rt          offset
-** 001111   -----   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void lui(int rt, int imm)
-{
-    //$t = (imm << 16); advance_pc (4);
-     recuperaOperacao("lui",recuperaNomeRegistrador(rt),"","",imm,0);
-     advance_pc (4);
-}
-
-/** Funcao Load word
-** lw $t, offset($s)
-** opcode   rs       rt          offset
-** 100011   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void lw(int rs, int rt, int offset)
-{
-    //$t = MEM[$s + offset]; advance_pc (4);
-    recuperaOperacao("lw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise or immediate
-** ori $t, $s, imm
-** opcode   rs       rt          imm
-** 001101   sssss   ttttt   iiiiiiiiiiiiiiii
-** $t = $s | imm
-**/
-void ori(int rs, int rt, int imm)
-{
-    recuperaOperacao("ori",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    advance_pc (4);
-}
-
-/** Funcao Store byte
-** sb $t, offset($s)
-** opcode   rs       rt          offset
-** 101000   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void sb(int rs, int rt, int offset)
-{
-    //MEM[$s + offset] = (0xff & $t); advance_pc (4);
-    recuperaOperacao("sb",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
-    advance_pc (4);
-}
-
-/** Funcao Set on less than immediate (signed)
-** slti $t, $s, imm
-** opcode   rs       rt          imm
-** 001010   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void slti(int rs, int rt, int imm)
-{
-    //if $s < imm $t = 1; advance_pc (4); else $t = 0; advance_pc (4);
-   recuperaOperacao("slti",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-   advance_pc (4);
-}
-
-/** Funcao Set on less than immediate unsigned
-** sltiu $t, $s, imm
-** opcode   rs       rt          imm
-** 001011   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void sltiu(int rs, int rt, int imm)
-{
-    //if $s < imm $t = 1; advance_pc (4); else $t = 0; advance_pc (4);
-    recuperaOperacao("sltiu",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    advance_pc (4);
-}
-
-/** Funcao Store word
-** sw $t, offset($s)
-** opcode   rs       rt          offset
-** 101011   sssss   ttttt   iiiiiiiiiiiiiiii
-** ?
-**/
-void sw(int rs, int rt, int offset)
-{
-    //MEM[$s + offset] = $t; advance_pc (4);
-    recuperaOperacao("sw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
-    advance_pc (4);
-}
-
-/** Funcao Bitwise exclusive or immediate
-** xori $t, $s, imm
-** opcode   rs       rt          imm
-** 001110   sssss   ttttt   iiiiiiiiiiiiiiii
-** $t = $s ^ imm
-**/
-void xori(int rs, int rt, int imm)
-{
-    recuperaOperacao("xori",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",imm,0);
-    advance_pc (4);
-}
-
-/***************************************************************************************/
-/************************************** Metodos ****************************************/
-/***************************************************************************************/
-
-
-/**
-**
-** funções de controle da ALU, em construção.
-**
-**/
-
-typedef struct st
-{
-    int regDst;
-    int origAlu;
-    int memReg;
-    int escReg;
-    int leMem;
-    int escMem;
-    int branch;
-    int opAlu1;
-    int opAlu2;
-    int jump;
-}controle;
-
-/*** alguém vê se essa tá certa ***/
-
-int ctrl_extend_signal(int var)
+unsigned int extende_sinal(unsigned int var)
 {
     int i=16;
-    if(var >> 16 != 0)
+    if(var >> 15 != 0)
     {
         while(i<32)
         {
@@ -879,17 +622,341 @@ int ctrl_extend_signal(int var)
     return var;
 }
 
-/*** essa eu nem sei se tá usando ***/
-
-controle zera_controle(controle ctrl)
+/** Função ALU
+** Parametros:
+    registrador1 --> primeira entrada da ALU
+    registrador2 --> segunda entrada da ALU
+    ctrlAlu --> indica qual operacao a realizar
+        0000  AND
+        0001  OR
+        0010  ADD
+        0110  SUB
+        0111  SLT
+        1100  NOR
+** Retorna
+    ALU
+**/
+ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
 {
-    ctrl.regDst = ctrl.origAlu = ctrl.memReg = ctrl.escReg = ctrl.leMem = ctrl.escMem = ctrl.branch = ctrl.opAlu1 = ctrl.opAlu2 = 0;
+    ALU aluControle;
+    aluControle.zeroAlu = (registrador1 - registrador2 == 0)? 1 : 0;
+    switch(ctrlAlu)
+    {
+    case 0:
+        aluControle.retornoAlu = registrador1 & registrador2;
+        break; //and.
+    case 1:
+        aluControle.retornoAlu = registrador1 | registrador2;
+        break; //or.
+    case 2:
+        aluControle.retornoAlu = registrador1 + registrador2;
+        break; //add.
+    case 6:
+        aluControle.retornoAlu = registrador1 - registrador2;
+        break; //sub.
+    case 7:
+        aluControle.retornoAlu = (registrador1 < registrador2)? 1 : 0;
+        break; //slt.
+    case 12:
+        aluControle.retornoAlu = ~(registrador1 | registrador2);
+        break; //nor.
+    default:
+        printf("\nALU não sabe realizar essa operacao\nCodigo operacao: %d\n\n",ctrlAlu);
+    }
+    return aluControle;
+}
+
+int codigoControleAlu(int opAlu1,int opAlu0,int funct)
+{
+    int ctrlAlu = 0;
+    if(opAlu1 == 0)
+    {
+        if(opAlu0 == 0) //add
+        {
+            ctrlAlu = 2;
+        }
+        else  //sub
+        {
+            ctrlAlu = 6;
+        }
+    }
+    else
+    {
+        if(opAlu0 == 1) //sub
+        {
+            ctrlAlu = 6;
+        }
+        else
+        {
+            int op5, op4, op3, op2, op1, op0;
+            op5 = funct >> 5;
+            funct -= op5 << 5;
+            op4 = funct >> 4;
+            funct -= op4 << 4;
+            op3 = funct >> 3;
+            funct -= op3 << 3;
+            op2 = funct >> 2;
+            funct -= op2 << 2;
+            op1 = funct >> 1;
+            funct -= op1 << 1;
+            op0 = funct;
+            if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 0) && (op1 == 0) && (op0 == 0))//sll
+            {
+                //ctrlAlu = 5;
+                operacaoAtual = 5;
+            }
+            if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 0) && (op1 == 0) && (op0 == 0))//jr
+            {
+                //ctrlAlu = 8;
+                operacaoAtual = 8;
+            }
+            if((op5 == 0) && (op4 == 1) && (op3 == 1) &&
+                (op2 == 0) && (op1 == 0) && (op0 == 0))//mult
+            {
+                //ctrlAlu = 3;
+                operacaoAtual = 3;
+            }
+            if((op5 == 0) && (op4 == 1) && (op3 == 1) &&
+                (op2 == 0) && (op1 == 1) && (op0 == 0))//div
+            {
+                //ctrlAlu = 4;
+                operacaoAtual = 4;
+            }
+            if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 0) && (op1 == 0) && (op0 == 0))//add
+            {
+                ctrlAlu = 2;
+                operacaoAtual = 2;
+            }
+            if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 0) && (op1 == 1) && (op0 == 0))//sub
+            {
+                ctrlAlu = 6;
+                operacaoAtual = 6;
+            }
+            if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 1) && (op1 == 0) && (op0 == 0))//and
+            {
+                ctrlAlu = 0;
+                operacaoAtual = 0;
+            }
+            if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 1) && (op1 == 0) && (op0 == 1))//or
+            {
+                ctrlAlu = 1;
+                operacaoAtual = 1;
+            }
+            if((op5 == 1) && (op4 == 0) && (op3 == 1) &&
+                (op2 == 0) && (op1 == 1) && (op0 == 0))//slt
+            {
+                ctrlAlu = 7;
+                operacaoAtual = 7;
+            }
+        }
+    }
+    return ctrlAlu;
+}
+
+Controle cria_controle()
+{
+    Controle c;
+    c.regDst        =   0;
+    c.origAlu       =   0;
+    c.origPC        =   0;
+    c.leMem         =   0;
+    c.memParaReg    =   0;
+    c.escreveReg    =   0;
+    c.escreveMem    =   0;
+    c.branchEq      =   0;
+    c.branchNotEq   =   0;
+    c.opAlu1        =   0;
+    c.opAlu0        =   0;
+    c.jump          =   0;
+    c.ctrlAlu       =   0;
+    return c;
+}
+
+Controle controleGeral(int opcode,int funct)
+{
+    Controle ctrl = cria_controle();
+    int op5, op4, op3, op2, op1, op0;
+    op5 = opcode >> 5;
+    opcode -= op5 << 5;
+    op4 = opcode >> 4;
+    opcode -= op4 << 4;
+    op3 = opcode >> 3;
+    opcode -= op3 << 3;
+    op2 = opcode >> 2;
+    opcode -= op2 << 2;
+    op1 = opcode >> 1;
+    opcode -= op1 << 1;
+    op0 = opcode;
+
+    //TIPO R: OPCODE 6 bits, RS 5 bits, RT 5 bits, RD 5 bits, SHAMT 5 bits, FUNCT 6 bits
+    //add, sub, mult, div, and, or, jr, slt, sll
+    if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+            (op2 == 0) && (op1 == 0) && (op0 == 0))
+    {
+        ctrl.regDst        =   1;
+        ctrl.origAlu       =   0;
+        ctrl.memParaReg    =   0;
+        ctrl.escreveReg    =   1;
+        ctrl.leMem         =   0;
+        ctrl.escreveMem    =   0;
+        ctrl.branchEq      =   0;
+        ctrl.branchNotEq   =   0;
+        ctrl.opAlu1        =   1;
+        ctrl.opAlu0        =   0;
+        ctrl.ctrlAlu       = codigoControleAlu(1,0,funct);
+
+        ctrl.jump          =   0;
+    }
+    else
+    {
+        // TIPO J >> OPCODE 6 bits, ENDEREÇO 26 bits
+        if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                (op2 == 0) && (op1 == 1) && (op0 == 0))//j
+        {
+            //a definir
+            operacaoAtual = 9;
+        }
+        else
+        {
+            // TIPO J
+            if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                    (op2 == 0) && (op1 == 1) && (op0 == 1))//jal
+            {
+                //a definir
+                operacaoAtual = 10;
+            }
+            else
+            {
+                //TIPO I >>  OPCODE 6 bits, RS 5 bits, RT 5 bits, ENDEREÇO/CONSTANTE 16 bits.
+                if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                        (op2 == 1) && (op1 == 0) && (op0 == 0))//beq
+                {
+                    ctrl.regDst        =   0;
+                    ctrl.origAlu       =   0;
+                    ctrl.memParaReg    =   0;
+                    ctrl.escreveReg    =   0;
+                    ctrl.leMem         =   0;
+                    ctrl.escreveMem    =   0;
+                    ctrl.branchEq      =   1;
+                    ctrl.branchNotEq   =   0;
+                    ctrl.opAlu1        =   0;
+                    ctrl.opAlu0        =   1;
+                    ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);
+
+                    ctrl.jump          =   0;
+                    operacaoAtual = 11;
+                }
+                else
+                {
+                    if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
+                            (op2 == 1) && (op1 == 0) && (op0 == 1))//bne
+                    {
+                        ctrl.regDst        =   0;
+                        ctrl.origAlu       =   0;
+                        ctrl.memParaReg    =   0;
+                        ctrl.escreveReg    =   0;
+                        ctrl.leMem         =   0;
+                        ctrl.escreveMem    =   0;
+                        ctrl.branchEq      =   0;
+                        ctrl.branchNotEq   =   1;
+                        ctrl.opAlu1        =   0;
+                        ctrl.opAlu0        =   1;
+                        ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);
+
+                        ctrl.jump          =   0;
+
+                        operacaoAtual = 12;
+                    }
+                    else
+                    {
+                        if((op5 == 0) && (op4 == 0) && (op3 == 1) &&
+                                (op2 == 0) && (op1 == 0) && (op0 == 0))//addi
+                        {
+                            ctrl.regDst        =   0;
+                            ctrl.origAlu       =   1;
+                            ctrl.memParaReg    =   0;
+                            ctrl.escreveReg    =   1;
+                            ctrl.leMem         =   0;
+                            ctrl.escreveMem    =   0;
+                            ctrl.branchEq      =   0;
+                            ctrl.branchNotEq   =   0;
+                            ctrl.opAlu1        =   0;
+                            ctrl.opAlu0        =   0;
+                            ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
+
+                            ctrl.jump          =   0;
+                            operacaoAtual = 13;
+                        }
+                        else
+                        {
+                            if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
+                                    (op2 == 0) && (op1 == 1) && (op0 == 1))//lw
+                            {
+                                ctrl.regDst        =   0;
+                                ctrl.origAlu       =   1;
+                                ctrl.memParaReg    =   1;
+                                ctrl.escreveReg    =   1;
+                                ctrl.leMem         =   1;
+                                ctrl.escreveMem    =   0;
+                                ctrl.branchEq      =   0;
+                                ctrl.branchNotEq   =   0;
+                                ctrl.opAlu1        =   0;
+                                ctrl.opAlu0        =   0;
+                                ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
+
+                                ctrl.jump          =   0;
+
+                                operacaoAtual = 14;
+                            }
+                            else
+                            {
+                                if((op5 == 1) && (op4 == 0) && (op3 == 1) &&
+                                        (op2 == 0) && (op1 == 1) && (op0 == 1))//sw
+                                {
+                                    ctrl.regDst        =   0;
+                                    ctrl.origAlu       =   1;
+                                    ctrl.memParaReg    =   0;
+                                    ctrl.escreveReg    =   0;
+                                    ctrl.leMem         =   0;
+                                    ctrl.escreveMem    =   1;
+                                    ctrl.branchEq      =   0;
+                                    ctrl.branchNotEq   =   0;
+                                    ctrl.opAlu1        =   0;
+                                    ctrl.opAlu0        =   0;
+                                    ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
+
+                                    ctrl.jump          =   0;
+
+                                    operacaoAtual = 15;
+                                }
+                                else
+                                {
+                                    printf("\nOPCODE %d na posicao %d invalido\n",opcode,(PC+1)); //opcode inválido
+                                    gravaArquivoModo(nomeArquivo,modoGravacao,"\n\nErro de opcode invalido\n\n");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     return ctrl;
 }
 
-/*** concat == deusa gambi? xD ***/
 
-int concat(int rs, int rt, int rd, int shamt, int funct, int qt)
+/*** essa eu nem sei se tá usando ***/
+
+
+/*** concat == deusa gambi? xD ***/
+/*
+int concatena(int rs, int rt, int rd, int shamt, int funct, int qt)
 {
     int conc=0;
     if(qt == 3) //concat rd, shamt, funct
@@ -901,71 +968,41 @@ int concat(int rs, int rt, int rd, int shamt, int funct, int qt)
 }
 
 /*** desvio falta ajeitar as variáveis e os parâmetros ***/
-
-void desvio(int rs, int rt, int rd, int shamt, int funct, int *PC)
+/*
+void desvio(int opcode. int rs, int rt, int rd, int shamt, int funct, int *PC)
 {
-    if(ctrl.jump)
-    {
-        if(ctrl.branch && zeroAlu)
-        {
-            *PC += 4 + ctrl_extend_signal(concat(rs, rt, rd, shamt, funct, 3));
-        }
-        else
-        {
-            *PC += 4;
-        }
-    }
-    else
-    {
-        *PC = concat(rs, rt, rd, shamt, funct, 3) << 2;
-    }
+if(!ctrl.jump)
+if(ctrl.branch && zeroAlu) // beq, bne...
+*PC += 4 + extende_sinal(concatena(rs, rt, rd, shamt, funct, 3));
+else
+if(funct == 8) //jr
+*PC = rs;
+else //sem desvio
+*PC += 4;
+else // jump
+if(opcode == 2)
+reg[31] = *PC + 4;
+*PC = concatena(rs, rt, rd, shamt, funct, 3) << 2;
 }
 
-
-//void mem_dados(controle ctrl, int resAlu, int *dadosLe2)
-//{
-//
-//}
-
-/*** the cake is a lie... ***/
-
-int alu(int rs, int rt, int rd, int *zeroAlu, int ctrlAlu, int shamt)
+void mem_dados(controle ctrl, int resAlu, int *dadosLe2)
 {
-    int resAlu;
-    *zeroAlu = 0; //inativa
-    switch(ctrlAlu)
-    {
-        case 0: resAlu = rs & rt; break; //and.
-        case 1: resAlu = rs | rt; break; //or.
-        case 2: resAlu = rs + rt; break; //add, lw, sw.
-        case 6:
-        {
-            resAlu = rs - rt;
-            if(resAlu == 0) *zeroAlu = 1; //seta ativo
-        }; break; //sub, beq, bne.
-        case 7:
-        {
-            if(rs < rt)
-                rd = 1;
-            else
-                rd = 0;
-        }; break; //slt
-        case ??: rd = rs << shamt; break;   // sll TEM QUE VER QUAL CTRLALU BOTA AKI
-        case ??: PC = rs;                   // jr  TEM QUE VER QUAL CTRLALU BOTA AKI
-        default: printf("\n\nErro de controle da ALU! \n\n"); //
-    }
-    return resAlu;
+
 }
+*/
+
+
+
 
 /*** tá foda... ***/
-
+/*
 void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc, int *pc)
 {
     int zeroAlu=0, resAlu, ctrlAlu, dadosLeitura, dadosEscrita; //zeroAlu ativa em ALTO.
 
     /** FALTA VER ONDE FICA: addi, j, jr, jal
-        FALTA ARRUMAR: um monte ^^              **/
-
+     /*   FALTA ARRUMAR: um monte ^^              **/
+/*
     if((ctrl.opAlu1 == 0 && ctrl.opAlu2 == 0)  //lw e sw == add
         ctrlAlu = 2;
     else
@@ -993,7 +1030,7 @@ void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *da
     resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu, shamt);
 
     /*** memória de dados, em construção. ***/
-
+/*
     if(ctrl.escMem)
     {
         dadosEscrita = dadosLe2; //tem que ver onde e como vai usar isso aqui...
@@ -1022,60 +1059,12 @@ void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *da
     //mem_dados(ctrl, resAlu, &dadosLe2);
 
     /** fim da memória de dados, em construção. ***/
-
+/*
     desvio(rs, rt, rd, shamt, funct, &pc);
 }
 
 /*** tá mto foda... ***/
-
-void controle(int opcode, int rs, int rt, int rd, int shamt, int funct, int *pc)
-{
-    int op5, op4, op3, op2, op1, op0, opatual;
-    controle ctrl;
-    ctrl = zera_controle(ctrl);
-    int dadosLe1, dadosLe2, dadosEsc;
-
-    op5 = opcode >> 5; opcode -= op5 << 5;
-    op4 = opcode >> 4; opcode -= op4 << 4;
-    op3 = opcode >> 3; opcode -= op3 << 3;
-    op2 = opcode >> 2; opcode -= op2 << 2;
-    op1 = opcode >> 1; opcode -= op1 << 1;
-    op0 = opcode;
-
-    /** ESSA PARTE ABAIXO TÁ BEM INCOMPLETA AINDA, mas o caminho parece ser esse **/
-
-    if(op5 == 0){ //R, beq, bne, j, jal, addi
-        if(op4 == 0){
-            if(op2 == 0){
-                if(op1 == 0)
-                    ctrl.regDst=ctrl.escReg=ctrl.opAlu1=1; //R
-                else
-                    if(op0 == 1)
-                        ; //jal
-                    else
-                        ; //j
-            } //op2
-            else{
-                if(op0 == 0)
-                    ctrl.branch=ctrl.opAlu2=1; //beq
-                else
-                    ; //bne QUAIS SÃO OS DADOS DE CONTROLE AQUI?
-            } //op2 else
-        } //op4
-        else //op4 == 1
-        {
-            if(op0 == 1)
-                ; //addi E AQUI?
-        } //op4 else
-    } //op5
-    else //lw ou sw
-        if(op3 == 0)
-            ctrl.origAlu = ctrl.memReg = ctrl.escReg = ctrl.leMem = 1; //lw
-        else
-            ctrl.origAlu = ctrl.escMem=1; //sw
-    regist(ctrl, rs, rt, rd, shamt, funct, &dadosLe1, &dadosLe2, &dadosEsc, &pc);
-}
-
+/*
 /**
 **
 ** FIM dasfunções de controle da ALU, em construção.
@@ -1089,224 +1078,101 @@ void executaInstrucoes(int qntInstrucoes)
 {
     imprimeCabecalho();
 
-    int opcode, funct, rs, rt, rd, shamt,teste;
-    short int aux,imm;
-    unsigned int inst_dec;
+    unsigned int instrucao_decimal;
+    int parte_31_26;
+    int parte_25_21;
+    int parte_20_16;
+    int parte_15_11;
+    int parte_10_6;
+    int parte_5_0;
+    int parte_25_0;
+    short int parte_15_0;
+    unsigned int parte_15_0_extendido;
+
+    int entradaAlu1;
+    int entradaAlu2;
+    int valorGravarRegistradores;
+
+    ALU unidadeLogica;
+    Controle controle;
 
     PC = 0;//PC seta o ponteiro como a 1° posicao do vetor
     reg[0] = 0;
 
     while(PC >= 0 && PC < qntInstrucoes)
-   {
-        inst_dec = mem[PC];
-        opcode = inst_dec >> 26;                   //desloca 26 bit pra a direita
-        inst_dec -= (opcode << 26);                //elimida o opcode
-        switch(opcode)
+    {
+        operacaoAtual = -1;
+        /** Recupera a instrucao **/
+        instrucao_decimal = mem[PC];
+
+        /** Incrimenta PC **/
+        advance_pc(4);
+
+        /** Quebra a intrucao **/
+        parte_31_26 = instrucao_decimal >> 26;                       //desloca 26 bit pra a direita
+        instrucao_decimal -= (parte_31_26 << 26);                    //elimina o parte_31_26
+        parte_25_21 = instrucao_decimal >> 21;                       //desloca 21 bit pra a direita
+        parte_25_0 = instrucao_decimal;
+        instrucao_decimal -= (parte_25_21 << 21);                    //elimina o parte_25_21
+        parte_20_16 = instrucao_decimal >> 16;                       //desloca 16 bit pra a direita
+        instrucao_decimal -= (parte_20_16 << 16);                    //elimina o parte_20_16
+        if(instrucao_decimal >> 15 == 1)
         {
-            //TIPO R: OPCODE 6 bits, RS 5 bits, RT 5 bits, RD 5 bits, SHAMT 5 bits, FUNCT 6 bits
-        case 0:
+            parte_15_0 = 32768 - instrucao_decimal;
+        }
+        else
         {
-            rs = inst_dec >> 21;               //desloca 21 bit pra a direita
-            inst_dec -= (rs << 21);            //elimina o rs
-            rt = inst_dec >> 16;               //desloca 16 bit pra a direita
-            inst_dec -= (rt << 16);            //elimina o rt
-            rd = inst_dec >> 11;               //desloca 11 bit pra a direita
-            inst_dec -= (rd << 11);            //elimina o rd
-            shamt = inst_dec >> 6;             //desloca 6 bit pra a direita
-            funct = inst_dec - (shamt << 6);   //elimina o shamt
-            switch(funct)
+            parte_15_0 = instrucao_decimal;
+        }
+        parte_15_11 = instrucao_decimal >> 11;                       //desloca 11 bit pra a direita
+        instrucao_decimal -= (parte_15_11 << 11);                    //elimina o parte_15_11
+        parte_10_6 = instrucao_decimal >> 6;                         //desloca 6 bit pra a direita
+        parte_5_0 = instrucao_decimal - (parte_10_6 << 6);           //elimina o parte_10_6
+
+        parte_15_0_extendido = extende_sinal(parte_15_0);
+
+        /** Inicia o controle **/
+        controle = controleGeral(parte_31_26,parte_5_0);
+
+        /** Carrega os dados para a ALU **/
+        entradaAlu1 = reg[parte_25_21];
+        if(controle.origAlu == 1){
+            entradaAlu2 = reg[parte_25_21];
+        }else{
+            entradaAlu2 = parte_15_0_extendido;
+        }
+
+        /** calcula os valores na ALU **/
+        unidadeLogica = executaAlu(entradaAlu1,entradaAlu2,controle.ctrlAlu);
+
+
+        if(controle.escreveMem == 1){//faz o sw
+            //entradaAlu2 e unidadeLogica.retornoAlu
+        }
+
+        /** Verifica o que é gravado no banco de registradors **/
+        if(controle.memParaReg == 0){//resultado alu
+            valorGravarRegistradores = unidadeLogica.retornoAlu;
+        }else{//lw
+
+        }
+
+         /** Verifica se pode gravar no registrador **/
+        if(controle.escreveReg == 1){
+            /** Define o registrador de destino a ser gravado **/
+            if(controle.regDst == 0)
             {
-            case 0://noop == sll(0,0,0)
-            {
-                if(rd == 0 && rt == 0 && shamt == 0)
-                    noop();
-                else
-                    sll(rs,rt,shamt);
+                reg[parte_20_16] = valorGravarRegistradores;
             }
-            break;
-            case 2:
-                srl(rt,rd,shamt);
-                break;
-            case 3:
-                sra(rt,rd,shamt);
-                break;
-            case 4:
-                sllv(rs,rt,rd);
-                break;
-            case 6:
-                srlv(rs,rt,rd);
-                break;
-            case 8:
-                jr(rs);
-                break;
-            case 12:
-                syscall();
-                break;
-            case 16:
-                mfhi(rd);
-                break;
-            case 18:
-                mflo(rd);
-                break;
-            case 24:
-                mult(rs,rt);
-                break;
-            case 25:
-                multu(rs,rt);
-                break;
-            case 26:
-                div_(rs,rt);
-                break;
-            case 27:
-                divu(rs,rt);
-                break;
-            case 32:
-                add(rs,rt,rd);
-                break;
-            case 33:
-                addu(rs,rt,rd);
-                break;
-            case 34:
-                sub(rs,rt,rd);
-                break;
-            case 35:
-                subu(rs,rt,rd);
-                break;
-            case 36:
-                and_(rs,rt,rd);
-                break;
-            case 37:
-                or_(rs,rt,rd);
-                break;
-            case 38:
-                xor_(rs,rt,rd);
-                break;
-            case 42:
-                slt(rs,rt,rd);
-                break;
-            case 43:
-                sltu(rs,rt,rd);
-                break;
-            default:
-                printf("\nFuncao %d na posicao %d invalida\n",funct,(PC+1)); //funct inválida
-                gravaArquivoModo(nomeArquivo,modoGravacao,"\n\nErro de funcao invalida\n\n");
+            else
+            {
+                reg[parte_15_11] = valorGravarRegistradores;
             }
         }
-        break;
-        // TIPO I >> OPCODE 6 bits, RS 5 bits, RT 5 bits, ENDEREÇO/CONSTANTE 16 bits.
-        case 1:
-        {
-            rs = inst_dec >> 21;               //desloca 21 bit pra a direita
-            inst_dec -= (rs << 21);            //elimida o rs
-            rt = inst_dec >> 16;               //desloca 16 bit pra a direita
-            teste = inst_dec - (rt << 16);     //elimina o rt
-            aux = teste >> 15;
-            if(aux == 1){
-                imm = 32768 - teste;
-            }else{
-                imm = teste;
-            }
-            switch(rt)
-            {
-            case 0:
-                bltz(rs,imm);
-                break;
-            case 1:
-                bgez(rs,imm);
-                break;
-            case 16:
-                bltzal(rs,imm);
-                break;
-            case 17:
-                bgezal(rs,imm);
-                break;
-            default:
-                printf("\nRegistrado rt %d na posicao %d invalida\n",rt,(PC+1)); //funct inválida
-                gravaArquivoModo(nomeArquivo,modoGravacao,"\n\nErro de Registrador invalido\n\n");
-            }
-        }
-        break;
-        // TIPO J >> OPCODE 6 bits, ENDEREÇO 26 bits
-        case 2:
-            j(inst_dec);
-            break;
-            // TIPO J
-        case 3:
-            jal(inst_dec);
-            break;
-            //TIPO I >>  OPCODE 6 bits, RS 5 bits, RT 5 bits, ENDEREÇO/CONSTANTE 16 bits.
-        case 4 ... 43:
-        {
-            rs = inst_dec >> 21;               //desloca 21 bit pra a direita
-            inst_dec -= (rs << 21);            //elimida o rs
-            rt = inst_dec >> 16;               //desloca 16 bit pra a direita
-            teste = inst_dec - (rt << 16);       //elimina o rt
-            aux = teste >> 15;
-            if(aux == 1){
-                imm = 32768 - teste;
-            }else{
-                imm = teste;
-            }
-            switch(opcode)
-            {
-            case 4:
-                beq(rs,rt,imm);
-                break;
-            case 5:
-                bne(rs,rt,imm);
-                break;
-            case 6:
-                blez(rs,imm);
-                break;
-            case 7:
-                bgtz(rs,imm);
-                break;
-            case 8:
-                addi(rs,rt,imm);
-                break;
-            case 9:
-                addiu(rs,rt,imm);
-                break;
-            case 10:
-                slti(rs,rt,imm);
-                break;
-            case 11:
-                sltiu(rs,rt,imm);
-                break;
-            case 12:
-                andi(rs,rt,imm);
-                break;
-            case 13:
-                ori(rs,rt,imm);
-                break;
-            case 14:
-                xori(rs,rt,imm);
-                break;
-            case 15:
-                lui(rt,imm);
-                break;
-            case 32:
-                lb(rs,rt,imm);
-                break;
-            case 35:
-                lw(rs,rt,imm);
-                break;
-            case 40:
-                sb(rs,rt,imm);
-                break;
-            case 43:
-                sw(rs,rt,imm);
-                break;
-            default:
-                printf("\nOPCODE %d na posicao %d invalido\n",opcode,(PC+1)); //opcode inválido.
-                gravaArquivoModo(nomeArquivo,modoGravacao,"\n\nErro de opcode invalido\n\n");
-            }
-        }
-        break;
-        default:
-            printf("\nOPCODE %d na posicao %d invalido\n",opcode,(PC+1)); //opcode inválido
-            gravaArquivoModo(nomeArquivo,modoGravacao,"\n\nErro de opcode invalido\n\n");
-        }
+
+        /** Imprime a operacao **/
+        imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0);
+
     }
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n\n------------------------------Fim da gravacao------------------------------\n\n");
 }
