@@ -106,7 +106,7 @@ typedef struct
 /***************************************************************************************/
 
 /**
-** Funcão recuperaNomeRegistrador
+** Função recuperaNomeRegistrador
 ** Recupera o 'nome' do registrador
 ** Retorna(char*)
 **/
@@ -192,40 +192,47 @@ char* recuperaNomeRegistrador(int num)
 **/
 char* recuperaOffset(int offset)
 {
+    /* Variáveis locais */
     char off[20];   // Vetor que guarda o valor de offset
+
     itoa(offset,off,10);    // Função do stdlib.h, converte int pra char*
     return off;
 }
 
 /**
-** Função que completa o vetor de caracter texto ate tam espacos
+** Procedimento completaComEspacos
+** Completa o vetor de caracter texto ate tam espacos
 **/
 void completaComEspacos(char* texto,int tam)
 {
-    int i,tamTxt = strlen(texto);
-    if(tamTxt >= tam)
-    {
-        return;
-    }
-    for(i= tamTxt; i<=tam; i++)
-    {
+    /* Variáveis locais */
+    int i;  // contador de caracteres da string
+    int tamTxt = strlen(texto);   // Variável que recupera o comprimento da string
+
+    if(tamTxt >= tam)   // Se o tamanho da string for maior que o informado
+        return; // Só retorna sem modificar a string
+
+    for(i= tamTxt; i<=tam; i++) // Senão percorre a string adicionando espaços
         strcat(texto," ");
-    }
 }
 
 /**
-** Função para imprimir o cabeçalho do arquivo de log
+** Procedimento imprimeCabecalho
+** Imprime o cabeçalho no arquivo de log
 **/
 void imprimeCabecalho()
 {
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n------------------------------Inicio da execucao------------------------------\n\n");
     printf("Inicializando operacoes ...\n");
-    int i;
+
+    /* Variáveis locais */
+    int i; // indexador para percorrer o banco de registradores
+
     gravaArquivoModo(nomeArquivo,modoGravacao,"Operacao//Registradores\tPC\t");
     printf("PC\tOperacao\t");
+
     //printf("Registradores\t");
-    for(i=1; i<32; i++)
-    {
+    for(i=1; i<32; i++){
         gravaArquivoModo(nomeArquivo,modoGravacao,recuperaNomeRegistrador(i));
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
         //printf("%s\t",recuperaNomeRegistrador(i));
@@ -235,11 +242,15 @@ void imprimeCabecalho()
 }
 
 /**
-** Função que imprime o estado dos registradores no arquivo de log
+** Procedimento imprimeRegistradores
+** Imprime o estado dos registradores no arquivo de log
 **/
 void imprimeRegistradores()
 {
-    int i;
+    /* Variáveis locais */
+    int i;  // indexador para percorrer o banco de registradores
+
+    /* Início da impressão do estado dos registradores no arquivo de log */
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
     for(i=1; i<32; i++)
@@ -248,9 +259,15 @@ void imprimeRegistradores()
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
         //printf("%d\t",reg[i]);
     }
+    /* Término da impressão do estado dos registradores no arquivo de log */
 }
 
-void imprimeControle(Controle c){
+/**
+** Procedimento imprimeControle
+** Imprime o estado das variáveis de controle no arquivo de log
+**/
+void imprimeControle(Controle c)
+{
     gravaArquivoModo(nomeArquivo,modoGravacao,"  ");
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.regDst));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
@@ -291,7 +308,9 @@ void imprimeControle(Controle c){
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n");
 }
 
-/** Funcao que imprime a intrucao
+/** Procedimento recuperaOperacao
+** Imprime a instrução
+
 ** Paramentros
    ope       *char   -- Nome da operacao
    r0        *char   -- Registrador
@@ -305,12 +324,14 @@ void imprimeControle(Controle c){
 **/
 void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOffset,Controle c)
 {
-    char retorno[20];
-    strcpy(retorno,ope);
-    strcat(retorno," ");
-    switch(posOffset)
+    /* Variáveis locais */
+    char retorno[20];   //
+
+    strcpy(retorno,ope);    // Copia o nome da operação atual para a string retorno
+    strcat(retorno," ");    // Adiciona um espaço ao final da string retorno
+    switch(posOffset)       // checa offset
     {
-    case -1:
+    case -1:    // Se offset é -1
     {
         if(strcmp(r0,"") > 0)
         {
@@ -368,6 +389,10 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     printf("\n");
 }
 
+/**
+** Procedimento imprimeOperacaoAtual
+** Recupera os dados da instrução que está sendo executada
+**/
 void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,Controle c)
 {
     switch(operacaoAtual)
@@ -433,19 +458,20 @@ void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,C
 /***************************************************************************************/
 
 /**
-** Função para avancar o PC
+** Procedimento atualiza_PC
+** Atualiza o valor de PC, de acordo com a instrução atual
 **/
 void atualiza_PC(int deslocamento,int mutex)
 {
-    PC = PC + 4/4;//pois é um inteiro
-    deslocamento += PC;
+    PC = PC + 4/4;  // Incrementa o valor de PC
     if(mutex == 1)
-    {
-        PC = abs(deslocamento >> 16);
-    }
+        PC += ((deslocamento >> 16) >> 2); //atualiza o PC somando deslocamento >> 16; o >> 2 adicional é porque tratamos do índice do vetor
 }
 
-/** Funcao de Extensão de Sinal do Deslocamento
+/**
+** Função extende_sinal
+** Extensde o Sinal do Deslocamento
+
 ** Se for negativo, 16 bits superiores = 1
 ** Se for positivo, 16 bits superiores = 0
 ** Parametro:
@@ -455,19 +481,23 @@ void atualiza_PC(int deslocamento,int mutex)
 **/
 unsigned int extende_sinal(unsigned int var)
 {
-    int i=16;
-    if(var >> 15 != 0)
+    /* Variáveis locais */
+    int i=16;   // Variável de indexação dos dígitos do número var
+
+    if(var >> 15 != 0)  // Se o 16º dígito for diferente de 0 (ou seja, se ele for 1)
     {
-        while(i<32)
+        while(i<32) // percorremos os dígitos mais significativos a partir do 16º
         {
-            var+=1<<i;
+            var+=1<<i;  // e extendemos o sinal, dígito por dígito
             i++;
         }
-    }
+    }   // Se o 16º dígito for 0, nada é feito, pois o número extendido já vem preenchido com zeros
     return var;
 }
 
-/** Função ALU
+/** Função executaAlu
+** Simula a execução da ALU
+
 ** Parametros:
     registrador1 --> primeira entrada da ALU
     registrador2 --> segunda entrada da ALU
@@ -483,57 +513,67 @@ unsigned int extende_sinal(unsigned int var)
 **/
 ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
 {
-    ALU aluControle;
-    aluControle.zeroAlu = (registrador1 - registrador2 == 0)? 1 : 0;
-    switch(ctrlAlu)
+    /* Variáveis locais */
+    ALU aluControle;    // Struct que contém as variáveis de controle da ALU
+
+    // Modifica o valor do sinal de controle zeroAlu, de acordo com o valor dos registradores em questão
+    aluControle.zeroAlu = (registrador1 - registrador2 == 0)? 1 : 0;    // zeroAlu é ativo em ALTO
+
+    switch(ctrlAlu) // Escolhe qual operação deve ser executada pela ALU
     {
     case 0:
         aluControle.retornoAlu = registrador1 & registrador2;
-        break; //and.
+        break;  //and.
     case 1:
         aluControle.retornoAlu = registrador1 | registrador2;
-        break; //or.
+        break;  //or.
     case 2:
         aluControle.retornoAlu = registrador1 + registrador2;
-        break; //add.
+        break;  //add.
     case 3:{
         HI = registrador1 * registrador2;
         LO = registrador1 * registrador2;
     }
-        break; //mult
+        break;  //mult
     case 4:{
         HI = registrador1 % registrador2;
         LO = registrador1 / registrador2;
     }
-        break; //div
+        break;  //div
     case 5:
         aluControle.retornoAlu = registrador1 << registrador2;
-        break; //sub.
+        break;  //sub.
     case 6:
         aluControle.retornoAlu = registrador1 - registrador2;
-        break; //sub.
+        break;  //sub.
     case 7:
         aluControle.retornoAlu = (registrador1 < registrador2)? 1 : 0;
-        break; //slt.
+        break;  //slt.
     case 12:
         aluControle.retornoAlu = ~(registrador1 | registrador2);
-        break; //nor.
-    default:
+        break;  //nor.
+    default:    //operação inválida
         printf("\nALU nao sabe realizar essa operacao\nCodigo operacao: %d\n\n",ctrlAlu);
     }
     return aluControle;
 }
 
+/**
+** Função codigoControleAlu
+** Gera os sinais de controle para que a ALU execute a operação correta
+**/
 int codigoControleAlu(int opAlu1,int opAlu0,int funct)
 {
-    int ctrlAlu = 0;
+    /* Variáveis locais */
+    int ctrlAlu = 0;    // Guarda o código da operação que deve ser realizada pela ALU
+
     if(opAlu1 == 0)
     {
-        if(opAlu0 == 0) //add
+        if(opAlu0 == 0) //add, para instruções como LW e SW
         {
             ctrlAlu = 2;
         }
-        else  //sub
+        else  //sub, para instruções como BEQ e BNE
         {
             ctrlAlu = 6;
         }
@@ -544,9 +584,13 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
         {
             ctrlAlu = 6;
         }
-        else
+        else    // instruções do tipo R
         {
+            /* Variáveis locais */
             int op5, op4, op3, op2, op1, op0;
+            // As variáveis op0, op1, op2, op3, op4, op5 pegam os dígitos separados do funct,
+            // para descobrir qual das instruções do tipo R está sendo tratada
+
             op5 = funct >> 5;
             funct -= op5 << 5;
             op4 = funct >> 4;
@@ -629,9 +673,16 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
     return ctrlAlu;
 }
 
+/**
+** Função cria_controle
+** Cria uma struct 'controle', com todos os sinais valendo 0
+**/
 Controle cria_controle()
 {
-    Controle c;
+    /* Variáveis locais */
+    Controle c; // Struct que contém todos os sinais de controle do caminho de dados
+
+    /* Zerando todos os sinais de controle */
     c.regDst        =   0;
     c.origAlu       =   0;
     c.origPC        =   0;
@@ -645,13 +696,21 @@ Controle cria_controle()
     c.opAlu0        =   0;
     c.jump          =   0;
     c.ctrlAlu       =   0;
+
     return c;
 }
 
+/**
+** Função controleGeral
+** Gerencia todas as operações relativas aos sinais de controle
+**/
 Controle controleGeral(int opcode,int funct)
 {
-    Controle ctrl = cria_controle();
-    int op5, op4, op3, op2, op1, op0;
+    /* Variáveis locais */
+    Controle ctrl = cria_controle();    // Struct que contém as variáveis para todos os sinais de controle
+    int op5, op4, op3, op2, op1, op0;   // Variáveis para desmembrar o opcode, para verificar qual a instrução atual
+
+    /* Desmembramento do opcode em bits separados */
     op5 = opcode >> 5;
     opcode -= op5 << 5;
     op4 = opcode >> 4;
@@ -669,6 +728,7 @@ Controle controleGeral(int opcode,int funct)
     if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
             (op2 == 0) && (op1 == 0) && (op0 == 0))
     {
+        /* Setando os sinais de controle corretos para instruções do tipo R */
         ctrl.regDst        =   1;
         ctrl.origAlu       =   0;
         ctrl.memParaReg    =   0;
@@ -679,9 +739,10 @@ Controle controleGeral(int opcode,int funct)
         ctrl.branchNotEq   =   0;
         ctrl.opAlu1        =   1;
         ctrl.opAlu0        =   0;
-        ctrl.ctrlAlu       = codigoControleAlu(1,0,funct);
 
-        ctrl.jump          =   0;
+        ctrl.ctrlAlu       = codigoControleAlu(1,0,funct);  // escolhe, de acordo com o funct, a instrução do tipo R a ser executada
+
+        ctrl.jump          =   0;   // instruções do tipo R não utilizam jump
     }
     else
     {
@@ -707,6 +768,7 @@ Controle controleGeral(int opcode,int funct)
                 if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                         (op2 == 1) && (op1 == 0) && (op0 == 0))//beq
                 {
+                    /* Setando os sinais de controle corretos para beq */
                     ctrl.regDst        =   0;
                     ctrl.origAlu       =   0;
                     ctrl.memParaReg    =   0;
@@ -717,9 +779,10 @@ Controle controleGeral(int opcode,int funct)
                     ctrl.branchNotEq   =   0;
                     ctrl.opAlu1        =   0;
                     ctrl.opAlu0        =   1;
-                    ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);
 
-                    ctrl.jump          =   0;
+                    ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);  // escolhe a instrução a ser executada
+
+                    ctrl.jump          =   0;   // beq não realizam jump, realiza branch
                     operacaoAtual = 11;
                 }
                 else
@@ -727,6 +790,7 @@ Controle controleGeral(int opcode,int funct)
                     if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                             (op2 == 1) && (op1 == 0) && (op0 == 1))//bne
                     {
+                        /* Setando os sinais de controle corretos para bne */
                         ctrl.regDst        =   0;
                         ctrl.origAlu       =   0;
                         ctrl.memParaReg    =   0;
@@ -737,9 +801,10 @@ Controle controleGeral(int opcode,int funct)
                         ctrl.branchNotEq   =   1;
                         ctrl.opAlu1        =   0;
                         ctrl.opAlu0        =   1;
-                        ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);
 
-                        ctrl.jump          =   0;
+                        ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);  // escolhe a instrução a ser executada
+
+                        ctrl.jump          =   0;   // bne não realiza jump, realiza branch
 
                         operacaoAtual = 12;
                     }
@@ -748,6 +813,7 @@ Controle controleGeral(int opcode,int funct)
                         if((op5 == 0) && (op4 == 0) && (op3 == 1) &&
                                 (op2 == 0) && (op1 == 0) && (op0 == 0))//addi
                         {
+                            /* Setando os sinais de controle corretos para addi */
                             ctrl.regDst        =   0;
                             ctrl.origAlu       =   1;
                             ctrl.memParaReg    =   0;
@@ -758,9 +824,10 @@ Controle controleGeral(int opcode,int funct)
                             ctrl.branchNotEq   =   0;
                             ctrl.opAlu1        =   0;
                             ctrl.opAlu0        =   0;
-                            ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
 
-                            ctrl.jump          =   0;
+                            ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
+
+                            ctrl.jump          =   0;   // addi não realiza jump
                             operacaoAtual = 13;
                         }
                         else
@@ -768,6 +835,7 @@ Controle controleGeral(int opcode,int funct)
                             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
                                     (op2 == 0) && (op1 == 1) && (op0 == 1))//lw
                             {
+                                /* Setando os sinais de controle corretos para lw */
                                 ctrl.regDst        =   0;
                                 ctrl.origAlu       =   1;
                                 ctrl.memParaReg    =   1;
@@ -778,9 +846,10 @@ Controle controleGeral(int opcode,int funct)
                                 ctrl.branchNotEq   =   0;
                                 ctrl.opAlu1        =   0;
                                 ctrl.opAlu0        =   0;
-                                ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
 
-                                ctrl.jump          =   0;
+                                ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
+
+                                ctrl.jump          =   0;   // lw não realiza jump
 
                                 operacaoAtual = 14;
                             }
@@ -789,6 +858,7 @@ Controle controleGeral(int opcode,int funct)
                                 if((op5 == 1) && (op4 == 0) && (op3 == 1) &&
                                         (op2 == 0) && (op1 == 1) && (op0 == 1))//sw
                                 {
+                                    /* Setando os sinais de controle corretos para sw */
                                     ctrl.regDst        =   0;
                                     ctrl.origAlu       =   1;
                                     ctrl.memParaReg    =   0;
@@ -799,9 +869,10 @@ Controle controleGeral(int opcode,int funct)
                                     ctrl.branchNotEq   =   0;
                                     ctrl.opAlu1        =   0;
                                     ctrl.opAlu0        =   0;
-                                    ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);
 
-                                    ctrl.jump          =   0;
+                                    ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
+
+                                    ctrl.jump          =   0;   // sw não realiza jump
 
                                     operacaoAtual = 15;
                                 }
@@ -820,126 +891,8 @@ Controle controleGeral(int opcode,int funct)
     return ctrl;
 }
 
+/** log de teste de funções **/
 
-/*** essa eu nem sei se tá usando ***/
-
-
-/*** concat == deusa gambi? xD ***/
-/*
-int concatena(int rs, int rt, int rd, int shamt, int funct, int qt)
-{
-    int conc=0;
-    if(qt == 3) //concat rd, shamt, funct
-        conc += (rd << 11) + (shamt << 6) + funct;
-    else
-        if(qt == 5)
-            conc += (rs << 21) + (rt << 16) + (rd << 11) + (shamt << 6) + funct;
-    return conc;
-}
-
-/*** desvio falta ajeitar as variáveis e os parâmetros ***/
-/*
-void desvio(int opcode. int rs, int rt, int rd, int shamt, int funct, int *PC)
-{
-if(!ctrl.jump)
-if(ctrl.branch && zeroAlu) // beq, bne...
-*PC += 4 + extende_sinal(concatena(rs, rt, rd, shamt, funct, 3));
-else
-if(funct == 8) //jr
-*PC = rs;
-else //sem desvio
-*PC += 4;
-else // jump
-if(opcode == 2)
-reg[31] = *PC + 4;
-*PC = concatena(rs, rt, rd, shamt, funct, 3) << 2;
-}
-
-void mem_dados(controle ctrl, int resAlu, int *dadosLe2)
-{
-
-}
-*/
-
-
-
-
-/*** tá foda... ***/
-/*
-void regist(controle ctrl, int rs, int rt, int rd, int shamt, int funct, int *dadosLe1, int *dadosLe2, int *dadosEsc, int *pc)
-{
-    int zeroAlu=0, resAlu, ctrlAlu, dadosLeitura, dadosEscrita; //zeroAlu ativa em ALTO.
-
-    /** FALTA VER ONDE FICA: addi, j, jr, jal
-     /*   FALTA ARRUMAR: um monte ^^              **/
-/*
-    if((ctrl.opAlu1 == 0 && ctrl.opAlu2 == 0)  //lw e sw == add
-        ctrlAlu = 2;
-    else
-        if(ctrl.opAlu1 == 1 && ctrl.opAlu2 == 0) //beq ou bne == subtract
-            if() //??  >> COMO DIFERENCIA O BEQ DO BNE POR AQUI?
-                ctrlAlu = 6;
-    else //ver campo funct.
-    {
-        switch (funct)
-        {
-            case 0 : ??; //sll
-            case 8 : ??; //jr
-            case 24: ??; break; //mult
-            case 26: ??; break; //div
-            case 32: ctrlAlu = 2; break; //add
-            case 34: ctrlAlu = 6; break; //sub
-            case 36: ctrlAlu = 0; break; //and
-            case 37: ctrlAlu = 1; break; //or
-            case 42: ctrlAlu = 7; break; //set on less than
-            case ??: ; break;
-            default: printf("\n\nErro no funct para controle da ALU! \n\n");
-        }
-    }
-
-    resAlu = alu(rs, rt, rd, &zeroAlu, ctrlAlu, shamt);
-
-    /*** memória de dados, em construção. ***/
-/*
-    if(ctrl.escMem)
-    {
-        dadosEscrita = dadosLe2; //tem que ver onde e como vai usar isso aqui...
-    }
-    else
-    {
-        ; //anything here??
-    }
-
-    if(ctrl.leMem)
-    {
-        if(ctrl.memReg)
-        {
-            *dadosEsc = dadosLeitura; //tem que ver como faz pra botar os dados aqui...
-        }
-        else
-        {
-            *dadosEsc = resAlu; // :P
-        }
-    }
-    else
-    {
-        ; //anything here??
-    }
-
-    //mem_dados(ctrl, resAlu, &dadosLe2);
-
-    /** fim da memória de dados, em construção. ***/
-/*
-    desvio(rs, rt, rd, shamt, funct, &pc);
-}
-
-/*** tá mto foda... ***/
-/*
-/**
-**
-** FIM dasfunções de controle da ALU, em construção.
-**
-**/
 /**
 Funcoes testadas:
 addi    ----> ok
@@ -959,79 +912,87 @@ j       ---->
 jr      ---->
 jal     ---->
 **/
+
 /**
-** Procedimento que executa uma quantidade de intruções MIPS(qntInstrucoes)
+** Procedimento executaInstrucoes
+** Executa uma quantidade de intruções MIPS(qntInstrucoes)
 **/
 void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 {
-    imprimeCabecalho();
+    imprimeCabecalho(); // Chama função de impressão de cabeçalho a fim de organização
 
-    unsigned int instrucao_decimal;
-    int parte_31_26;
-    int parte_25_21;
-    int parte_20_16;
-    int parte_15_11;
-    int parte_10_6;
-    int parte_5_0;
-    int parte_25_0;
-    short int parte_15_0;
-    unsigned int parte_15_0_extendido;
+    /* Variáveis locais */
+    unsigned int instrucao_decimal;     // guarda o valor da instrução atual convertida para decimal
 
-    int entradaAlu1;
-    int entradaAlu2;
-    int valorGravarRegistradores;
-    int salto;
+    int parte_31_26;                    // guarda o valor do OPCODE
+    int parte_25_21;                    // guarda o valor do RS
+    int parte_20_16;                    // guarda o valor do RT
+    int parte_15_11;                    // guarda o valor do RD
+    int parte_10_6;                     // guarda o valor do SHAMT
+    int parte_5_0;                      // guarda o valor do FUNCT
+    int parte_25_0;                     // guarda o valor do endereço de jump
+    short int parte_15_0;               // guarda o valor do endereço de branch
+    unsigned int parte_15_0_extendido;  // guarda o valor do endereço de branch, após a extensão de sinal
 
-    ALU unidadeLogica;
-    Controle controle;
+    int entradaAlu1;                    // guarda o 1º valor a ser operado pela ALU
+    int entradaAlu2;                    // guarda o 2º valor a ser operado pela ALU
 
-    PC = 0;//PC seta o ponteiro como a 1° posicao do vetor
-    reg[0] = 0;
+    int valorGravarRegistradores;       // guarda o valor a ser gravado no banco de registradores
 
-    while(PC >= 0 && PC < qntInstrucoes)
+    int salto;                          // guarda informação de tomada de salto
+
+    ALU unidadeLogica;                  // struct que salva o resultado da operação feita pela ALU, assim como sinal de controle zeroAlu
+    Controle controle;                  // struct que salva os sinais de controle do caminho de dados
+
+    PC = 0;     // PC seta o ponteiro como a 1° posicao do vetor
+    reg[0] = 0; // Seta o valor do registrador $ZERO
+
+    while(PC >= 0 && PC < qntInstrucoes)    // Enquanto ainda existirem instruções a serem lidas
     {
-        operacaoAtual = -1;
-        salto = 0;
-        /** Recupera a instrucao **/
+        operacaoAtual = -1; // reseta o valor da instrução
+        salto = 0;  // reseta informação sobre tomada de salto
+
+        /** Carrega a instrucao atual a partir da memória **/
         instrucao_decimal = mem[PC];
 
-        /** Quebra a intrucao **/
-        parte_31_26 = instrucao_decimal >> 26;                       //desloca 26 bit pra a direita
-        instrucao_decimal -= (parte_31_26 << 26);                    //elimina o parte_31_26
-        parte_25_21 = instrucao_decimal >> 21;                       //desloca 21 bit pra a direita
-        parte_25_0 = instrucao_decimal;
-        instrucao_decimal -= (parte_25_21 << 21);                    //elimina o parte_25_21
-        parte_20_16 = instrucao_decimal >> 16;                       //desloca 16 bit pra a direita
-        instrucao_decimal -= (parte_20_16 << 16);                    //elimina o parte_20_16
-        if(instrucao_decimal >> 15 == 1)
-        {
-            parte_15_0 = 32768 - instrucao_decimal;
-        }
-        else
-        {
-            parte_15_0 = instrucao_decimal;
-        }
-        parte_15_11 = instrucao_decimal >> 11;                       //desloca 11 bit pra a direita
-        instrucao_decimal -= (parte_15_11 << 11);                    //elimina o parte_15_11
-        parte_10_6 = instrucao_decimal >> 6;                         //desloca 6 bit pra a direita
-        parte_5_0 = instrucao_decimal - (parte_10_6 << 6);           //elimina o parte_10_6
+        /** Divide a instrução em partes **/
+        parte_31_26 = instrucao_decimal >> 26;              // guarda o OPCODE
+        instrucao_decimal -= (parte_31_26 << 26);           // elimina o OPCODE da instrução (necessário para dividir com facilidade as partes)
+        parte_25_21 = instrucao_decimal >> 21;              // guarda o RS
+        parte_25_0 = instrucao_decimal;                     // guarda o endereço de jump (caso seja necessário futuramente)
+        instrucao_decimal -= (parte_25_21 << 21);           // elimina o RS da instrução
+        parte_20_16 = instrucao_decimal >> 16;              // guarda o RT
+        instrucao_decimal -= (parte_20_16 << 16);           // elimina o RT da instrução
 
-        parte_15_0_extendido = extende_sinal(parte_15_0);
+        /** Essa parte é útil caso a instrução seja branch **/
+        if(instrucao_decimal >> 15 == 1)
+            parte_15_0 = 32768 - instrucao_decimal;         // Salva o endereço de branch
+        else
+            parte_15_0 = instrucao_decimal;                 // Salva o endereço de branch
+
+        parte_15_11 = instrucao_decimal >> 11;              // guarda o RD
+        instrucao_decimal -= (parte_15_11 << 11);           // elimina o RD da instrução
+        parte_10_6 = instrucao_decimal >> 6;                // guarda o SHAMT
+        parte_5_0 = instrucao_decimal - (parte_10_6 << 6);  // guarda o FUNCT
+
+        parte_15_0_extendido = extende_sinal(parte_15_0);   // extende o sinal do endereço de branch
 
         /** Inicia o controle **/
-        controle = controleGeral(parte_31_26,parte_5_0);
+        controle = controleGeral(parte_31_26,parte_5_0);    // Carrega os sinais de controle de acordo com a instrução atual
 
         /** Carrega os dados para a ALU **/
-        entradaAlu1 = reg[parte_25_21];
+        entradaAlu1 = reg[parte_25_21];                     // Carrega o 1º valor a ser operado pela ALU
+
+        /** Escolhe o 2º valor a ser operado pela ALU **/
         if(controle.origAlu == 0)
         {
-            if(controle.ctrlAlu == 5) //sll
+            if(controle.ctrlAlu == 5) // sll
             {
                 entradaAlu2 = parte_10_6;
             }
             else
             {
-                if(controle.ctrlAlu == 16) //mfhi
+                if(controle.ctrlAlu == 16) // mfhi
                 {
                     entradaAlu1 = 0;
                     entradaAlu2 = HI;
@@ -1039,46 +1000,42 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 }
                 else
                 {
-                    if(controle.ctrlAlu == 17) //mflo
+                    if(controle.ctrlAlu == 17) // mflo
                     {
                         entradaAlu1 = 0;
                         entradaAlu2 = LO;
                         controle.ctrlAlu = 2;
                     }
-                    else
+                    else    // outras instruções que façam uso da ALU
                     {
                         entradaAlu2 = reg[parte_20_16];
                     }
                 }
             }
         }
-        else
+        else    // beq e bne
         {
             entradaAlu2 = parte_15_0;
         }
 
-        /** calcula os valores na ALU **/
+        /** Realiza os cálculos na ALU **/
         unidadeLogica = executaAlu(entradaAlu1,entradaAlu2,controle.ctrlAlu);
 
         /** Verifica se é branch equal */
         if(controle.branchEq == 1)
         {
             if(unidadeLogica.zeroAlu == 1) //toma desvio
-            {
                 salto = 1;
-            }
         }
 
         /** Verifica se é branch not equal */
         if(controle.branchNotEq == 1)
         {
             if(unidadeLogica.zeroAlu == 0) //toma desvio
-            {
                 salto = 1;
-            }
         }
 
-        if(controle.escreveMem == 1) //faz o sw
+        if(controle.escreveMem == 1) // sw
         {
             //entradaAlu2 e unidadeLogica.retornoAlu
         }
@@ -1088,31 +1045,29 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
         }
-        else  //lw
+        else  // lw
         {
 
         }
 
-        /** Verifica se pode gravar no registrador **/
+        /** Verifica se pode gravar no banco de registradores **/
         if(controle.escreveReg == 1)
         {
             if(controle.ctrlAlu != 3 && controle.ctrlAlu != 4){
                 /** Define o registrador de destino a ser gravado **/
                 if(controle.regDst == 0)
-                {
                     reg[parte_20_16] = valorGravarRegistradores;
-                }
+
                 else
-                {
                     reg[parte_15_11] = valorGravarRegistradores;
-                }
+
             }
         }
 
-        /** Imprime a operacao **/
+        /** Imprime a operação atual **/
         imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0,controle);
 
-        /** Incrimenta PC **/
+        /** Incrementa PC **/
         atualiza_PC(parte_15_0_extendido << 2,salto);
 
         if(modoExecucao == 1){
@@ -1123,11 +1078,22 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
     printf("Operacoes finalizadas com sucesso!\n");
 }
 
-void resetaRegistradoresMemoria(){
-    int i;
-    for(i=0;i<32;i++){
+/**
+** Procedimento resetaRegistradoresMemoria
+** Responsável pela função RESET
+
+** Reseta os valores de todos os registradores, incluindo HI e LO
+**/
+void resetaRegistradoresMemoria()
+{
+    /* Variáveis locais */
+    int i;  // indexador, para percorrer o vetor de registradores
+
+    for(i=0;i<32;i++){  // Passa por todos os registradores, zerando cada um deles
         reg[i] = 0;
     }
+
+    /* zera os registradores HI e LO */
     HI=0;
     LO=0;
 }
