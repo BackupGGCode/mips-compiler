@@ -2,27 +2,30 @@
 #define ARQUIVOS_H_INCLUDED
 
 /**
-** Procedimento que le um arquivo(arq *FILE)
-** Valida se o arquivo e nulo
+** Procedimento leArquivo
+** Lê um arquivo(arq *FILE)
+** Valida se o arquivo é nulo
 ** Arquivo deve estar no modo de leitura
-** Esta funcao não fecha o arquivo lido
+** Esta função não fecha o arquivo lido
 **/
 int leArquivo(FILE* arq);
 
 /**
-** Procedimento que grava em um arquivo(arq *FILE) uma string(texto *char)
-** Valida se o arquivo e nulo
+** Procedimento gravaArquivo
+** Grava uma string(texto *char) em um arquivo(arq *FILE)
+** Valida se o arquivo é nulo
 ** Arquivo deve estar no modo de gravação
-** Esta funcao não fecha o arquivo gravado
+** Esta função não fecha o arquivo gravado
 **/
 void gravaArquivo(FILE* arq,char* texto);
 
 /**
-** Funcao que le um arquivo apartir do nome(arq *nomeArq)
+** Função leArquivoModo
+** Lê um arquivo a partir do nome(arq *nomeArq)
 ** com um modo(modo *char) para leitura
 ** Valida se o modo é de leitura
 ** Valida se o arquivo existe
-** Esta funcao fecha o arquivo lido
+** Esta função fecha o arquivo lido
 ** Retorna(int)
    0 -> não conseguiu ler
    1-> conseguiu ler
@@ -30,11 +33,12 @@ void gravaArquivo(FILE* arq,char* texto);
 int leArquivoModo(char* nomeArq,char* modo);
 
 /**
-** Funcao que grava em um arquivo apartir do nome(arq *nomeArq)
+** Funcao gravaArquivoModo
+** Grava em um arquivo a partir do nome(arq *nomeArq)
 ** com um modo(modo *char) para gravação
 ** o texto (texto char*)
 ** Valida se o modo é de gravação
-** Esta funcao fecha o arquivo lido
+** Esta função fecha o arquivo lido
 ** Retorna(int)
    0 -> comando invalido
    1-> conseguiu gravar
@@ -42,7 +46,8 @@ int leArquivoModo(char* nomeArq,char* modo);
 int gravaArquivoModo(char* nomeArq,char* modo,char* texto);
 
 /**
-** Função que verifica se o nome do arquivo(nomeArq *char)
+** Função terminaCom
+** Verifica se o nome do arquivo(nomeArq *char)
 ** termina com separador(separador *char) +
 ** a extensao (extensaoArq char*)
 ** Valida se o arquivo é null

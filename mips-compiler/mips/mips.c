@@ -1011,7 +1011,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
             }
             else
             {
-                if(controle.ctrlAlu == 16) //mghi
+                if(controle.ctrlAlu == 16) //mfhi
                 {
                     entradaAlu1 = 0;
                     entradaAlu2 = HI;
@@ -1019,7 +1019,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 }
                 else
                 {
-                    if(controle.ctrlAlu == 17) //mglo
+                    if(controle.ctrlAlu == 17) //mflo
                     {
                         entradaAlu1 = 0;
                         entradaAlu2 = LO;

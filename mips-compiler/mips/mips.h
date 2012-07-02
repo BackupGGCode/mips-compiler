@@ -9,12 +9,19 @@
 /***************************************************************************************/
 
 unsigned int mem[maxInstrucoes];
-int PC;
-int reg[32];      //Registradores
+int PC;             // Program counter
+int reg[32];        // Registradores
 
-
+/**
+** Procedimento executaInstrucoes
+** Procedimento que starta a execução das instruções de acordo com o modo de execução desejado
+**/
 void executaInstrucoes(int qntInstrucoes,int modoExecucao);
 
+/**
+** Procedimento resetaRegistradoresMemoria
+** Reseta os valores contidos nos registradores e na memória de instruções
+**/
 void resetaRegistradoresMemoria();
 
 #endif // MIPS_H_INCLUDED
