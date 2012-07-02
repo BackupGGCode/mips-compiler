@@ -13,7 +13,7 @@
 char* nomeArquivo = "log.trojan";   // Nome do arquivo de log
 char* modoGravacao = "a";           // Tipo de abertura do arquivo
 int operacaoAtual;                  // Valor da operacao atual(serve para a gravacao)
-unsigned int HI,LO;
+unsigned int HI,LO;                 // Variáveis HI e LO para tratar multiplicação e divisão
 
 /***************************************************************************************/
 /********************************* Estruturas do MIPS **********************************/
@@ -54,17 +54,35 @@ typedef struct
     /**     Se 1 -- > valor de “Dados para Escrita”                 */
     int escreveReg;
 
-    /** Controla onde o Valor de “Dados para Escrita” é colocado   */
+    /** Controla onde o Valor de “Dados para Escrita” é colocado    */
     /**     Se 0 -- > nenhum lugar                                  */
     /**     Se 1 -- > colocado em “Endereço”                        */
     int escreveMem;
 
+    /** Controle de tomada de branch                                */
+    /**     Se 0 -- > desvio não deve ser tomado                    */
+    /**     Se 1 -- > desvio deve ser tomado                        */
     int branchEq;
+
+    /** Controle de tomada de branch                                */
+    /**     Se 0 -- > desvio não deve ser tomado                    */
+    /**     Se 1 -- > desvio deve ser tomado                        */
     int branchNotEq;
+
+    /** Controlam o tipo de operação deverá ser feita pela ALU      */
+    /**     Se 00 -- > add                                          */
+    /**     Se 01 -- > subtract                                     */
+    /**     Se 10 -- > TIPO R, verificar campo funct                */
     int opAlu1;
     int opAlu0;
+
+    /** Controle de tomada de jump                                  */
+    /**     Se 0 -- > jump não deve ser efetuado                    */
+    /**     Se 1 -- > jump deve ser efetuado                        */
     int jump;
 
+    /** Controla a operação da ALU                                  */
+    /**     Depende dos 'opAlu's e do campo funct                   */
     int ctrlAlu;
 } Controle;
 
@@ -88,7 +106,8 @@ typedef struct
 /***************************************************************************************/
 
 /**
-** Funcão que recupera o 'nome' do registrador
+** Funcão recuperaNomeRegistrador
+** Recupera o 'nome' do registrador
 ** Retorna(char*)
 **/
 char* recuperaNomeRegistrador(int num)
@@ -166,14 +185,15 @@ char* recuperaNomeRegistrador(int num)
 }
 
 /**
-** Função que recupera o offset como char* apartir do parametro passado(offset int)
+** Função recuperaOffset
+** Recupera o offset como char* a partir do parâmetro passado (offset int)
 ** Retorno
     off char*
 **/
 char* recuperaOffset(int offset)
 {
-    char off[20];
-    itoa(offset,off,10);
+    char off[20];   // Vetor que guarda o valor de offset
+    itoa(offset,off,10);    // Função do stdlib.h, converte int pra char*
     return off;
 }
 
