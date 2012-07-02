@@ -6,45 +6,49 @@
 #include "layout.h"
 #include "mips.h"
 
-
+/**
+** Procedimento leInstrucoes
+** Verifica se o arquivo foi lido corretamente
+** Também faz a chamada para execução das instruções contidas no arquivo
+**/
 void leInstrucoes(char* nomeArq){
-    int qnt = leArquivoModo(nomeArq,"r+");
-    //Se não leu o arquivo
-    if(qnt == 0)
-    {
+    int qnt = leArquivoModo(nomeArq,"r+");  // Verifica se arquivo foi lido
+
+    if(qnt == 0){   // Se não leu o arquivo corretamente
         printf("Corrija o arquivo!!\n");
-    }else{
+    }else{          // Se leu o arquivo corretamente
         wait(0.5);
 
-        int opc = execucaoMenu();
-        if(opc == 1 || opc == 2){
-            limpaPrompt();
-            executaInstrucoes(qnt,opc);
+        int opc = execucaoMenu();   // Exibe o menu e recupera opção escolhida
+        if(opc == 1 || opc == 2){   // Se opção é válida
+            limpaPrompt();  // Limpa tela
+            executaInstrucoes(qnt,opc); // Inicia execução em um dos modos válidos
         }else{
             printf("Opcao invalida!\n");
             wait(0.5);
         }
     }
 }
-/**
-** Procedimento para realizar a leitura
-**/
-void realizaLeitura()
-{
-    /* Variaveis locais */
-    char nomeArq[20];      //armazena o nome do arquivo
-    char testaArq[20];     //testar se é txt
-    char continua;         //deseja continuar
-    do
-    {
-        limpaPrompt();
-        printf("Digite o nome do arquivo a ser lido:\nArquivo: ");
-        gets(nomeArq);
 
-        strcpy(testaArq,nomeArq);
-        //verifica se é txt
-        if(!terminaCom(testaArq,".","txt"))
+/**
+** Procedimento realizaLeitura
+** Realiza a leitura e chama a execução de arquivos
+**/
+void realizaLeitura(){
+    /* Variaveis locais */
+    char nomeArq[20];      // Armazena o nome do arquivo
+    char testaArq[20];     // Variável para testar se é txt
+    char continua;         // Variável para verificar se operador deseja continuar
+
+    do{
+        limpaPrompt();  // Limpa a tela
+        printf("Digite o nome do arquivo a ser lido:\nArquivo: ");
+        gets(nomeArq);  // Pega, via teclado, o nome do arquivo que se deseja gravar
+        strcpy(testaArq,nomeArq);   // Copia nome do arquivo para testar se é txt
+
+        if(!terminaCom(testaArq,".","txt")) //verifica se é txt
         {
+            // Caso não seja, pede um novo arquivo que seja txt
             printf("Nao eh um txt!!!\n");
             continua = 'y';
             wait(0.5);
@@ -52,106 +56,116 @@ void realizaLeitura()
         }
 
         leInstrucoes(nomeArq);
-        //Verifica se deseja ler outro arquivo
+
+        // Verifica se deseja ler outro arquivo
         printf("\nLer outro arquivo?(y ou n)? ");
         scanf("%c%*c",&continua);
-    }
-    while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
+    }while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
 }
 
-
 /**
-** Procedimento para realizar a gravação
+** Procedimento realizaGravacao
+** Realiza a gravação e chama a execução de arquivos
 **/
-void realizaGravacao()
-{
-    /* Variaveis locais */
-    char nomeArq[20];      //armazena o nome do arquivo
-    char testaArq[20];     //testar se é txt
-    char continua;         //deseja continuar
-    do
-    {
-        limpaPrompt();
+void realizaGravacao(){
+    /* Variáveis locais */
+    char nomeArq[20];      // Armazena o nome do arquivo
+    char testaArq[20];     // Variável para testar se é txt
+    char continua;         // Variável para verificar se operador deseja continuar
+
+    do{
+        limpaPrompt();  // Limpa a tela
         printf("Digite o nome do arquivo a ser gravado:\nArquivo: ");
-        gets(nomeArq);
-        strcpy(testaArq,nomeArq);
-        //verifica se é txt
-        if(!terminaCom(testaArq,".","txt"))
+        gets(nomeArq);  // Pega, via teclado, o nome do arquivo que se deseja gravar
+        strcpy(testaArq,nomeArq);   // Copia nome do arquivo para testar se é txt
+
+        if(!terminaCom(testaArq,".","txt")) //verifica se é txt
         {
+            // Caso não seja, pede um novo arquivo que seja txt
             printf("\nNao eh um txt!!!");
             continua = 'y';
             wait(0.5);
             continue;
         }
-        do
-        {
-            limpaPrompt();
-            char texto[100];
+
+        do{
+            limpaPrompt();  // Limpa a tela
+            char texto[100];    // Variável que pega o texto a ser gravado no arquivo
+
             printf("Digite o texto a ser gravado em %s:\nTexto: ",nomeArq);
             gets(texto);
             strcat(texto,"\n\0");
-            gravaArquivoModo(nomeArq,"a+",texto);
 
-            //Verifica se deseja continuar gravando nesse arquivo
+            gravaArquivoModo(nomeArq,"a+",texto);   // Grava o texto no arquivo
+
+            // Verifica se deseja continuar gravando nesse arquivo
             printf("\nContinuar gravando?(y ou n)? ");
             scanf("%c%*c",&continua);
+        }while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
 
-        }
-        while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
+        leInstrucoes(nomeArq);  // chama o procedimento de execução do código presente no arquivo
 
-        leInstrucoes(nomeArq);
-        //Verifica se deseja gravando em outro arquivo
+        // Verifica se deseja gravar em outro arquivo
         printf("Gravar em outro arquivo?(y ou n)? ");
         scanf("%c%*c",&continua);
-    }
-    while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
-
+    }while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
 }
 
+/**
+** Função resetMem
+** Chama procedimento de RESET dos registradores e memória
+**/
 void resetaMem(){
-    resetaRegistradoresMemoria();
+    resetaRegistradoresMemoria();   // função que realmente reseta (mips.c)
 }
+
 /**
 ** Função principal
+** Inicia a execução chamando o menu
 **/
-int main()
-{
+int main(){
     /* Variaveis locais */
-    char continua;   //deseja continuar
-    int opc;         //acao a ser feita
-    do
-    {
-        opc = selecionaMenu();
-        switch(opc)
-        {
-        case 1:
-            realizaLeitura();
-            break;
-        case 2:
-            realizaGravacao();
-            break;
-        case 3:{
-            resetaMem();
-            printf("Memoria resetada!");
-            wait(0.5);
-            continua = 'y';
-            continue;
-        }
-        break;
-        case 4:
-            return 0;
-        default :
-        {
-            printf("Opcao invalida!");
-            wait(0.5);
-            continua = 'y';
-            continue;
-        }
-        }
+    char continua;   // Variável para verificar se o operador deseja continuar
+    int opc;         // Variável que salva a ação a ser executada
 
+    do{
+        opc = selecionaMenu();  // Chama o menu (layout.c)
+        switch(opc) // Testa a variável de opção
+        {
+            case 1: // Ler um arquivo
+                realizaLeitura();
+                break;
+
+            case 2: // Entrada via teclado
+                realizaGravacao();
+                break;
+
+            case 3: // Resetar memória/registradores
+            {
+                resetaMem();
+                printf("Memoria resetada!");
+                wait(0.5);
+
+                // Avança para pedir uma nova opção
+                continua = 'y';
+                continue;
+            }break;
+
+            case 4: // Sair
+                return 0;
+            default:// Opção selecionada não existe
+            {
+                printf("Opcao invalida!");
+                wait(0.5);
+
+                // Avança para pedir uma nova opção
+                continua = 'y';
+                continue;
+            }
+        }
         printf("\nDeseja continuar(y ou n)? ");
         scanf("%c%*c",&continua);
-    }
-    while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
+    }while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
+
     return 0;
 }

@@ -17,43 +17,49 @@
    a+ 	Abre o arquivo para escrita no final do arquivo e leitura.
 */
 
-/** Funcao bin2dec
-** Conver uma String binaria(bin char*) para decimal
+/** Função bin2dec
+** Converte uma String binária (bin char*) para decimal
 ** Retorna (unsigned int)
    sum
 **/
 unsigned int bin2dec(char *bin)
 {
-    int len, k;
-    unsigned int sum = 0,des;
-    int n;
-    len =  strlen(bin) -1;
-    for(k = 0; k <= len && bin[k] != '\n' && bin[k] != '\0'; k++)
+    /* Variáveis locais */
+    int len;    // Armazena o comprimento da string
+    int k;      // indexador da string
+
+    // Variável 'des' salva o bit deslocado para a posição correta no número
+    unsigned int sum = 0, des;  // Variável 'sum' salva o número convertido
+
+    int n;  // Salva temporariamente o dígito convertido a ser adicionado a 'sum'
+
+    len =  strlen(bin) -1;  // Armazena o comprimento da string
+
+    for(k = 0; k <= len && bin[k] != '\n' && bin[k] != '\0'; k++)   // Percorre a string
     {
-        n = (bin[k] - '0'); // converte char para numero
-        if ((n > 1) || (n < 0))
-        {
-            return -1;
-        }
-        des = n << (len - k -1);
-        sum += des;
+        n = (bin[k] - '0'); // Converte char para número
+
+        if ((n > 1) || (n < 0)) // Se o número for inválido
+            return -1;  // Erro
+
+        des = n << (len - k -1);    // Recupera o bit já deslocado para a posição correta
+        sum += des; // Adiciona o bit na posição correta do número
     }
     return sum;
 }
 
-
 /**
-** Funcao que le um arquivo(arq *FILE)
-** Valida se o arquivo e nulo
+** Função leArquivo
+** Lê um arquivo(arq *FILE)
+** Verifica se o arquivo é nulo
 ** Arquivo deve estar no modo de leitura
-** Esta funcao não fecha o arquivo lido
+** Esta função não fecha o arquivo lido
 ** Retorna (int)
    i
 **/
 int leArquivo(FILE* arq)
 {
-    //Verifi ca se o arquivo não é NULL
-    if (arq == NULL)
+    if (arq == NULL)    //Verifica se o arquivo é NULL
     {
         printf("Arquivo invalido!\n");
         return -1;
@@ -61,41 +67,41 @@ int leArquivo(FILE* arq)
 
     /* Variaveis locais */
     char linha[100];    // Armazena a linha lida atual
-    char* result;   // Armazena se foi possivel ler a linha
-    int i =0;       // Variavel para mostrar o numero da linha
-    unsigned int numAtual;
-    int erro = 0;
-    // Enquanto não esta no fim do arquivo
-    while (!feof(arq))
+    char* result;   // Variável para armazenar se foi possível ler a linha
+    int i = 0;      // Variável para mostrar o número da linha
+    unsigned int numAtual;  // Variável que armazena a instrução convertida para decimal
+    int erro = 0;   // Variável para verificação de erros no código binário
+
+    while (!feof(arq))  // Enquanto não está no fim do arquivo
     {
         // Lê uma linha (inclusive com o '\n')
         result = fgets(linha, 34, arq);  // o 'fgets' lê até 33 caracteres ou até o '\n'
-        // Se foi possível ler
-        if (result)
+
+        if (result) // Se foi possível ler
         {
-           if(strlen(result) < 33){//32 bit + '\n'
+           if(strlen(result) < 33){ //32 bit + '\n'
                erro = 1;
                break;
            }
-           if(strlen(result) > 33){
+           if(strlen(result) > 33){ // Se a string é maior do que deveria
                 erro = 2;
                break;
            }
-            numAtual = bin2dec(result);
-            if(numAtual == -1)
+            numAtual = bin2dec(result); // Converte a string binária em decimal
+            if(numAtual == -1) // Se encontrou algum dígito inválido
             {
                 erro = 3;
                 break;
             }
-            if(i < maxInstrucoes){
-               mem[i] = numAtual;
+            if(i < maxInstrucoes){  // Se ainda não leu todas as instruções
+               mem[i] = numAtual;   // Salva a instrução na Memória de Instruções
             }
             else{
                erro = 4;
                break;
             }
         }
-        i++;
+        i++; // Incrementa o valor da linha
     }
     i--;
     switch(erro)
@@ -119,70 +125,64 @@ int leArquivo(FILE* arq)
 }
 
 /**
-** Procedimento que grava em um arquivo(arq *FILE) uma string(texto *char)
-** Valida se o arquivo e nulo
+** Procedimento gravaArquivo
+** Grava uma string(texto *char) em um arquivo(arq *FILE)
+** Verifica se o arquivo é nulo
 ** Arquivo deve estar no modo de gravação
-** Esta funcao não fecha o arquivo gravado
+** Esta função não fecha o arquivo gravado
 **/
 void gravaArquivo(FILE* arq,char* texto)
 {
     /* Variaveis locais */
-    int resultado = fputs(texto, arq); // Armazena se foi possivel grava na linha
+    int resultado = fputs(texto, arq); // Tenta gravar na linha e verifica se foi possível efetuar a gravação
 
-    // Se deu erro na gravação
-    if (resultado == EOF)
-    {
+    if (resultado == EOF)   // Se deu erro na gravação
         printf("Erro na Gravacao\n");
-    }
 }
 
-
 /**
-** Funcao que le um arquivo apartir do nome(arq *nomeArq)
+** Função leArquivoModo
+** Lê um arquivo a partir do nome(arq *nomeArq)
 ** com um modo(modo *char) para leitura
-** Valida se o modo é de leitura
-** Valida se o arquivo existe
-** Esta funcao fecha o arquivo lido
+** Verifica se o modo é de leitura
+** Verifica se o arquivo existe
+** Esta função fecha o arquivo lido
 ** Retorna(int)
    0 -> não conseguiu ler
    qndInstrucoes
 **/
 int leArquivoModo(char* nomeArq,char* modo)
 {
-    //Verifica se o modo é de leitura
-    if(!strcmp(modo, "r") && !strcmp(modo,"r+") && !strcmp(modo,"a+") )
+    if(!strcmp(modo, "r") && !strcmp(modo,"r+") && !strcmp(modo,"a+"))  //Verifica se o modo é de leitura
     {
         printf("Comando %s nao serve para leitura!\n",modo);
         return 0;
     }
 
-    /* Variaveis locais */
-    FILE *arq = fopen(nomeArq, modo);       //Variavel do arquivo
+    /* Variáveis locais */
+    FILE *arq = fopen(nomeArq, modo);       //Variável do arquivo
 
-    //se o arquivo não existe ou teve rro na abertura
-    if(arq == NULL)
+    if(arq == NULL) //Se o arquivo não existe ou teve erro na abertura
     {
         printf("O arquivo %s nao existe!\n",nomeArq);
         return 0;
     }
 
-    //Le o arquivo
-    int qntInstrucoes = leArquivo(arq);
+    int qntInstrucoes = leArquivo(arq); //Lê o arquivo
 
-    //Fecha o arquivo
-    fclose(arq);
+    fclose(arq);    //Fecha o arquivo
     return (qntInstrucoes > 0)?qntInstrucoes : 0;
 }
 
-
 /**
-** Funcao que grava em um arquivo apartir do nome(arq *nomeArq)
+** Função gravaArquivoModo
+** Grava em um arquivo a partir do nome(arq *nomeArq)
 ** com um modo(modo *char) para gravação
 ** o texto (texto char*)
-** Valida se o modo é de gravação
-** Esta funcao fecha o arquivo lido
+** Verifica se o modo é de gravação
+** Esta função fecha o arquivo lido
 ** Retorna(int)
-   0 -> comando invalido
+   0 -> comando inválido
    1-> conseguiu gravar
 **/
 int gravaArquivoModo(char* nomeArq,char* modo,char* texto)
@@ -195,7 +195,7 @@ int gravaArquivoModo(char* nomeArq,char* modo,char* texto)
     }
 
     /* Variaveis locais */
-    FILE *arq = fopen(nomeArq, modo); //Variavel do arquivo
+    FILE *arq = fopen(nomeArq, modo); //Variável do arquivo
 
     gravaArquivo(arq,texto);
 
@@ -204,10 +204,11 @@ int gravaArquivoModo(char* nomeArq,char* modo,char* texto)
 }
 
 /**
-** Função que verifica se o nome do arquivo(nomeArq *char)
+** Função terminaCom
+** Verifica se o nome do arquivo(nomeArq *char)
 ** termina com separador(separador *char) +
 ** a extensao (extensaoArq char*)
-** Valida se o arquivo é null
+** Verifica se o arquivo é null
 ** Retorna(int)
    0 --> não é um documento de texto
    1 --> é um documento de texto
@@ -218,23 +219,17 @@ int terminaCom(char *nomeArq,char *separador,char* extensaoArq)
     if(nomeArq == NULL)
         return 0;
 
-    /* Variaveis locais */
-    char* parte;     // variavel para pegar a(s) parte(s) antes do separador
+    /* Variáveis locais */
+    char* parte;     // variável para pegar a(s) parte(s) antes do separador
 
     //Percorre toda a string nomeArq
-    for (parte = strtok(nomeArq, separador);
-            parte;
-            parte = strtok(NULL, separador))
+    for (parte = strtok(nomeArq, separador); parte; parte = strtok(NULL, separador))
     {
-        // Verifica se a parte atual é igual a extensao
-        if(!strcmp(extensaoArq,parte))
+        if(!strcmp(extensaoArq,parte))  // Verifica se a parte atual é igual à extensão
         {
-            parte = strtok(NULL, separador); // pega proxima parte
-            //Se for o final do nome
-            if(parte == NULL)
-            {
+            parte = strtok(NULL, separador); // pega próxima parte
+            if(parte == NULL)   //Se for o final do nome
                 return 1;
-            }
         }
     }
     return 0;
