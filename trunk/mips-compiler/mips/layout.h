@@ -2,17 +2,20 @@
 #define LAYOUT_H_INCLUDED
 
 /**
-** Procedimento para pausar um tempo(segundos float)
+** Procedimento wait
+** Pausa a execução por um determinado tempo(segundos float)
 **/
 void wait ( float segundos );
 
 /**
-** Procedimento para limpar o prompt
+** Procedimento limpaPrompt
+** Limpa o prompt
 **/
 void limpaPrompt();
 
 /**
-** Função que mostra o menu
+** Função selecionaMenu
+** Mostra o menu e recupera a opção escolhida
 ** Retorna(int)
    opção selecionada
 **/
