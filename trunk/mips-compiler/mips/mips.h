@@ -20,7 +20,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao);
 
 /**
 ** Procedimento resetaRegistradoresMemoria
-** Reseta os valores contidos nos registradores e na memória de instruções
+** Reseta os valores contidos nos registradores
 **/
 void resetaRegistradoresMemoria();
 
