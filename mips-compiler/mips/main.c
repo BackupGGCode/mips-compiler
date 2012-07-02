@@ -19,9 +19,7 @@ void leInstrucoes(char* nomeArq){
         int opc = execucaoMenu();
         if(opc == 1 || opc == 2){
             limpaPrompt();
-            printf("Inicializando operacoes ...\nPC\tOperacao\n");
             executaInstrucoes(qnt,opc);
-            printf("Operacoes finalizadas com sucesso!\n");
         }else{
             printf("Opcao invalida!\n");
             wait(0.5);

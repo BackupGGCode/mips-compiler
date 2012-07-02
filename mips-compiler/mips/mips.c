@@ -199,14 +199,19 @@ void completaComEspacos(char* texto,int tam)
 void imprimeCabecalho()
 {
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n------------------------------Inicio da execucao------------------------------\n\n");
+    printf("Inicializando operacoes ...\n");
     int i;
     gravaArquivoModo(nomeArquivo,modoGravacao,"Operacao//Registradores\tPC\t");
+    printf("PC\tOperacao\t");
+    //printf("Registradores\t");
     for(i=1; i<32; i++)
     {
         gravaArquivoModo(nomeArquivo,modoGravacao,recuperaNomeRegistrador(i));
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
+        //printf("%s\t",recuperaNomeRegistrador(i));
     }
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\n");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tOP1\tOP2\tCTR\tJUMP\t\n");
+    printf("\n");
 }
 
 /**
@@ -221,7 +226,48 @@ void imprimeRegistradores()
     {
         gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(reg[i]));
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
+        //printf("%d\t",reg[i]);
     }
+}
+
+void imprimeControle(Controle c){
+    gravaArquivoModo(nomeArquivo,modoGravacao,"  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.regDst));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.origAlu));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.memParaReg));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.escreveReg));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.leMem));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.escreveMem));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.branchEq));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.branchNotEq));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.opAlu1));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.opAlu0));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.ctrlAlu));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.jump));
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
+
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n");
 }
 
@@ -237,7 +283,7 @@ void imprimeRegistradores()
                        0  > imprime com o offset no final
                        1  > imprime com o offset no meio
 **/
-void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOffset)
+void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOffset,Controle c)
 {
     char retorno[20];
     strcpy(retorno,ope);
@@ -295,68 +341,70 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     }
     completaComEspacos(retorno,20);
     strcat(retorno,"\t");
+    printf("%d\t%s\t",PC*4,retorno);
     gravaArquivoModo(nomeArquivo,modoGravacao,retorno);
     imprimeRegistradores();
-    printf("%d\t%s\n",PC,retorno);
+    imprimeControle(c);
+    printf("\n");
 }
 
-void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target)
+void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,Controle c)
 {
     switch(operacaoAtual)
     {
     case 0:
-        recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        recuperaOperacao("and",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1,c);
         break;
     case 1:
-        recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        recuperaOperacao("or",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1,c);
         break;
     case 2:
-        recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        recuperaOperacao("add",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1,c);
         break;
     case 3:
-        recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
+        recuperaOperacao("mult",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1,c);
         break;
     case 4:
-        recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1);
+        recuperaOperacao("div",recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),"",0,-1,c);
         break;
     case 5:
-        recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),"",shamt,0);
+        recuperaOperacao("sll",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),"",shamt,0,c);
         break;
     case 6:
-        recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        recuperaOperacao("sub",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1,c);
         break;
     case 7:
-        recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1);
+        recuperaOperacao("slt",recuperaNomeRegistrador(rd),recuperaNomeRegistrador(rs),recuperaNomeRegistrador(rt),0,-1,c);
         break;
     case 8:
-        recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1);
+        recuperaOperacao("jr",recuperaNomeRegistrador(rs),"","",0,-1,c);
         break;
     case 9:
-        recuperaOperacao("j","","","",target,0);
+        recuperaOperacao("j","","","",target,0,c);
         break;
     case 10:
-        recuperaOperacao("jal","","","",target,0);
+        recuperaOperacao("jal","","","",target,0,c);
         break;
     case 11:
-        recuperaOperacao("beq",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        recuperaOperacao("beq",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0,c);
         break;
     case 12:
-        recuperaOperacao("bne",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        recuperaOperacao("bne",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0,c);
         break;
     case 13:
-        recuperaOperacao("addi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0);
+        recuperaOperacao("addi",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,0,c);
         break;
     case 14:
-        recuperaOperacao("lw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
+        recuperaOperacao("lw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1,c);
         break;
     case 15:
-        recuperaOperacao("sw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1);
+        recuperaOperacao("sw",recuperaNomeRegistrador(rt),recuperaNomeRegistrador(rs),"",offset,1,c);
         break;
     case 16:
-        recuperaOperacao("mfhi",recuperaNomeRegistrador(rd),"","",0,-1);
+        recuperaOperacao("mfhi",recuperaNomeRegistrador(rd),"","",0,-1,c);
         break;
     case 17:
-        recuperaOperacao("mflo",recuperaNomeRegistrador(rd),"","",0,-1);
+        recuperaOperacao("mflo",recuperaNomeRegistrador(rd),"","",0,-1,c);
         break;
     }
 }
@@ -1042,7 +1090,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         }
 
         /** Imprime a operacao **/
-        imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0);
+        imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0,controle);
 
         /** Incrimenta PC **/
         atualiza_PC(parte_15_0_extendido << 2,salto);
@@ -1052,6 +1100,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         }
     }
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n\n------------------------------Fim da gravacao------------------------------\n\n");
+    printf("Operacoes finalizadas com sucesso!\n");
 }
 
 void resetaRegistradoresMemoria(){
