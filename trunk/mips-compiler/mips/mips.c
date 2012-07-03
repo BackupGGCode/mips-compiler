@@ -473,9 +473,10 @@ void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,C
 **/
 void atualiza_PC(int deslocamento,int mutex)
 {
-    PC = PC + 4/4;  // Incrementa o valor de PC
+    PC = PC + 4/4; // Incrementa o valor de PC
     if(mutex == 1){
-        PC += ((deslocamento >> 16) >> 2); //atualiza o PC somando deslocamento >> 16; o >> 2 adicional é porque tratamos do índice do vetor
+        deslocamento = (deslocamento > 32768)? ((deslocamento >> 16) >> 2) : (deslocamento >> 2);
+        PC += deslocamento; //atualiza o PC somando deslocamento >> 16; o >> 2 adicional é porque tratamos do índice do vetor
     }
 }
 
