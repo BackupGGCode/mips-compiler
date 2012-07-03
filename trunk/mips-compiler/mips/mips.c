@@ -233,6 +233,13 @@ void imprimeCabecalho()
         //printf("%s\t",recuperaNomeRegistrador(i));
     }
     gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tOP1\tOP2\tCTR\tJUMP\t\n");
+    for(i=1; i<tamanhoMemoriaDados/4; i++)
+    {
+        gravaArquivoModo(nomeArquivo,modoGravacao,"Mem");
+        gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(i));
+        gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
+        //printf("%Memd\t",i);
+    }
     printf("\n");
 }
 
@@ -246,7 +253,6 @@ void imprimeRegistradores()
     int i;  // indexador para percorrer o banco de registradores
 
     /** Início da impressão do estado dos registradores no arquivo de log **/
-    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
     for(i=1; i<32; i++)
     {
@@ -255,6 +261,26 @@ void imprimeRegistradores()
         //printf("%d\t",reg[i]);
     }
     /** Término da impressão do estado dos registradores no arquivo de log **/
+}
+
+/**
+** Procedimento imprimeMemDeDados
+** Imprime o toda a memória de dados no arquivo de log
+**/
+void imprimeMemDeDados()
+{
+    /** Variáveis locais **/
+    int i;  // indexador para percorrer a memória de dados
+
+    /** Início da impressão da memória de dados no arquivo de log **/
+   gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
+    for(i=1; i<tamanhoMemoriaDados/4; i++)
+    {
+        gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(mem_dados[i]));
+        gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
+        //printf("%d\t",mem_dados[i]);
+    }
+    /** Término da impressão da memória de dados no arquivo de log **/
 }
 
 /**
@@ -386,6 +412,8 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     printf("%d\t%s\t",PC*4,retorno);                    // imprime "PC+4   retorno"
 
     gravaArquivoModo(nomeArquivo,modoGravacao,retorno); // grava a impressão no arquivo de log
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));// grava o valor do PC no arquivo de log
 
     imprimeRegistradores();                             // grava o valor dos registradores no arquivo de log
 
@@ -548,8 +576,8 @@ void multiplicacaoMIPS(int valor1,int valor2){
     valor2  int  -- divisor
 **/
 void divisaoMIPS(int valor1,int valor2){
-    HI = registrador1 % registrador2;
-    LO = registrador1 / registrador2;
+    HI = valor1 % valor2;
+    LO = valor1 / valor2;
 }
 
 /** Função executaAlu
