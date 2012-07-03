@@ -34,11 +34,6 @@ typedef struct
     /**     Se 1 -- > vem do sinal estendido                        */
     int origAlu;
 
-    /** Controla a origm do PC                                      */
-    /**     Se 0 -- > PC = PC + 4                                   */
-    /**     Se 1 -- > PC = desvio                                   */
-    int origPC;
-
     /** Controla onde o Valor lido de “Endereço” é colocado         */
     /**     Se 0 -- > nenhum lugar                                  */
     /**     Se 1 -- > colocado em “Dados da Leitura”                */
@@ -107,7 +102,7 @@ typedef struct
 
 /**
 ** Função recuperaNomeRegistrador
-** Recupera o 'nome' do registrador
+** Recupera o 'nome' do registrador baseado no numero dele(num int)
 ** Retorna(char*)
 **/
 char* recuperaNomeRegistrador(int num)
@@ -192,8 +187,8 @@ char* recuperaNomeRegistrador(int num)
 **/
 char* recuperaOffset(int offset)
 {
-    /* Variáveis locais */
-    char off[20];   // Vetor que guarda o valor de offset
+    /** Variáveis locais **/
+    char off[20];           // Vetor que guarda o valor de offset
 
     itoa(offset,off,10);    // Função do stdlib.h, converte int pra char*
     return off;
@@ -201,11 +196,11 @@ char* recuperaOffset(int offset)
 
 /**
 ** Procedimento completaComEspacos
-** Completa o vetor de caracter texto ate tam espacos
+** Completa o vetor de caracter texto(texto char*) ate tam(tam int) espaços
 **/
 void completaComEspacos(char* texto,int tam)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int i;  // contador de caracteres da string
     int tamTxt = strlen(texto);   // Variável que recupera o comprimento da string
 
@@ -225,7 +220,7 @@ void imprimeCabecalho()
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n------------------------------Inicio da execucao------------------------------\n\n");
     printf("Inicializando operacoes ...\n");
 
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int i; // indexador para percorrer o banco de registradores
 
     gravaArquivoModo(nomeArquivo,modoGravacao,"Operacao//Registradores\tPC\t");
@@ -247,10 +242,10 @@ void imprimeCabecalho()
 **/
 void imprimeRegistradores()
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int i;  // indexador para percorrer o banco de registradores
 
-    /* Início da impressão do estado dos registradores no arquivo de log */
+    /** Início da impressão do estado dos registradores no arquivo de log **/
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
     for(i=1; i<32; i++)
@@ -259,12 +254,12 @@ void imprimeRegistradores()
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
         //printf("%d\t",reg[i]);
     }
-    /* Término da impressão do estado dos registradores no arquivo de log */
+    /** Término da impressão do estado dos registradores no arquivo de log **/
 }
 
 /**
 ** Procedimento imprimeControle
-** Imprime o estado das variáveis de controle no arquivo de log
+** Imprime o estado das variáveis de controle(c Controle) no arquivo de log
 **/
 void imprimeControle(Controle c)
 {
@@ -303,15 +298,14 @@ void imprimeControle(Controle c)
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.jump));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n");
 }
 
 /** Procedimento recuperaOperacao
 ** Imprime a instrução
-
-** Paramentros
+** Parâmentros
    ope       *char   -- Nome da operacao
    r0        *char   -- Registrador
    r1        *char   -- Registrador
@@ -322,16 +316,17 @@ void imprimeControle(Controle c)
                        0  > imprime com o offset no final
                        1  > imprime com o offset no meio
                        2  > imprime com 1 registrador e o offset
+    c       Controle -- Controle atual
 **/
 void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOffset,Controle c)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     char retorno[20];   //
 
     strcpy(retorno,ope);    // Copia o nome da operação atual para a string retorno
     strcat(retorno," ");    // Adiciona um espaço ao final da string retorno
 
-    /* Checa tipo de offset, para formatar corretamente a instrução atual */
+    /** Checa tipo de offset, para formatar corretamente a instrução atual **/
     switch(posOffset)
     {
     case -1:    // sem offset: Ex.: add $t1 $t2 $t3
@@ -384,24 +379,31 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     break;
     }
 
-    /* Continua a formatação da string */
+    /** Continua a formatação da string **/
     completaComEspacos(retorno,20);
     strcat(retorno,"\t");
 
-    printf("%d\t%s\t",PC*4,retorno);    // imprime "PC+4   retorno"
+    printf("%d\t%s\t",PC*4,retorno);                    // imprime "PC+4   retorno"
 
     gravaArquivoModo(nomeArquivo,modoGravacao,retorno); // grava a impressão no arquivo de log
 
-    imprimeRegistradores(); // grava o valor dos registradores no arquivo de log
+    imprimeRegistradores();                             // grava o valor dos registradores no arquivo de log
 
-    imprimeControle(c);     // grava o valor dos sinais de controle no arquivo de log
+    imprimeControle(c);                                 // grava o valor dos sinais de controle no arquivo de log
 
-    printf("\n");           // melhora a formatação
+    printf("\n");                                       // melhora a formatação
 }
 
 /**
 ** Procedimento imprimeOperacaoAtual
 ** Recupera os dados da instrução que está sendo executada
+** Parâmentros
+   rs        int     -- Registrador
+   rt        int     -- Registrador
+   rd        int     -- Registrador
+   offset    int     -- offset
+   target    int     -- target de instrucoes do tipo j
+    c       Controle -- Controle atual
 **/
 void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,Controle c)
 {
@@ -470,30 +472,37 @@ void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,C
 /**
 ** Procedimento atualiza_PC
 ** Atualiza o valor de PC, de acordo com a instrução atual
+** Parâmentros
+   deslocamento        int     -- Caso aja deslocamento,o valor do deslocamento
+   mutex               int     -- Validador se há deslocamento
+                       1  > tem deslocamento
+                       0  > não tem deslocamento
 **/
 void atualiza_PC(int deslocamento,int mutex)
 {
     PC = PC + 4/4; // Incrementa o valor de PC
     if(mutex == 1){
-        deslocamento = (deslocamento > 32768)? ((deslocamento >> 16) >> 2) : (deslocamento >> 2);
-        PC += deslocamento; //atualiza o PC somando deslocamento >> 16; o >> 2 adicional é porque tratamos do índice do vetor
+        if(deslocamento > 32768){//Verifica se o numero era negativo
+            deslocamento = (deslocamento >> 16);//retira a extensao de sinal
+        }
+        deslocamento = (deslocamento >> 2); // >> 2 adicional é porque tratamos do índice do vetor
+        PC += deslocamento;
     }
 }
 
 /**
 ** Função extende_sinal
 ** Extensde o Sinal do Deslocamento
-
 ** Se for negativo, 16 bits superiores = 1
 ** Se for positivo, 16 bits superiores = 0
-** Parametro:
-      unsigned int var --> numero a ser extendido
+** Parâmetro:
+      var   unsigned int var -- número a ser extendido
 ** Retorno
     unsigned int
 **/
 unsigned int extende_sinal(unsigned int var)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int i=16;   // Variável de indexação dos dígitos do número var
 
     if(var >> 15 != 0)  // Se o 16º dígito for diferente de 0 (ou seja, se ele for 1)
@@ -509,23 +518,25 @@ unsigned int extende_sinal(unsigned int var)
 
 /** Função executaAlu
 ** Simula a execução da ALU
-
-** Parametros:
-    registrador1 --> primeira entrada da ALU
-    registrador2 --> segunda entrada da ALU
-    ctrlAlu --> indica qual operacao a realizar
-        0000  AND
-        0001  OR
-        0010  ADD
-        0110  SUB
-        0111  SLT
-        1100  NOR
+** Parâmetros:
+    registrador1  int  -- primeira entrada da ALU
+    registrador2  int  -- segunda entrada da ALU
+    ctrlAlu       int  -- indica qual operacao a realizar
+                        0000  AND
+                        0001  OR
+                        0010  ADD
+                        0011  MULT
+                        0100  DIV
+                        0101  SLL
+                        0110  SUB
+                        0111  SLT
+                        1100  NOR
 ** Retorna
     ALU
 **/
 ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     ALU aluControle;    // Struct que contém as variáveis de controle da ALU
 
     // Modifica o valor do sinal de controle zeroAlu, de acordo com o valor dos registradores em questão
@@ -554,7 +565,7 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
         break;  //div
     case 5:
         aluControle.retornoAlu = registrador1 << registrador2;
-        break;  //sub.
+        break;  //sll.
     case 6:
         aluControle.retornoAlu = registrador1 - registrador2;
         break;  //sub.
@@ -573,10 +584,14 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
 /**
 ** Função codigoControleAlu
 ** Gera os sinais de controle para que a ALU execute a operação correta
+** Parâmetros:
+    opAlu1  int  -- gerado pela unidade de controle
+    opAlu0  int  -- gerado pela unidade de controle
+    funct   int  -- caso seja instrucao do tipo R, usa o funct
 **/
 int codigoControleAlu(int opAlu1,int opAlu0,int funct)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int ctrlAlu = 0;    // Guarda o código da operação que deve ser realizada pela ALU
 
     if(opAlu1 == 0)
@@ -585,7 +600,7 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
         {
             ctrlAlu = 2;
         }
-        else  //sub, para instruções como BEQ e BNE
+        else            //sub, para instruções como BEQ e BNE
         {
             ctrlAlu = 6;
         }
@@ -598,7 +613,7 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
         }
         else    // instruções do tipo R
         {
-            /* Variáveis locais */
+            /** Variáveis locais **/
             int op5, op4, op3, op2, op1, op0;
             // As variáveis op0, op1, op2, op3, op4, op5 pegam os dígitos separados do funct,
             // para descobrir qual das instruções do tipo R está sendo tratada
@@ -691,13 +706,12 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
 **/
 Controle cria_controle()
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     Controle c; // Struct que contém todos os sinais de controle do caminho de dados
 
-    /* Zerando todos os sinais de controle */
+    /** Zerando todos os sinais de controle **/
     c.regDst        =   0;
     c.origAlu       =   0;
-    c.origPC        =   0;
     c.leMem         =   0;
     c.memParaReg    =   0;
     c.escreveReg    =   0;
@@ -718,11 +732,11 @@ Controle cria_controle()
 **/
 Controle controleGeral(int opcode,int funct)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     Controle ctrl = cria_controle();    // Struct que contém as variáveis para todos os sinais de controle
     int op5, op4, op3, op2, op1, op0;   // Variáveis para desmembrar o opcode, para verificar qual a instrução atual
 
-    /* Desmembramento do opcode em bits separados */
+    /** Desmembramento do opcode em bits separados **/
     op5 = opcode >> 5;
     opcode -= op5 << 5;
     op4 = opcode >> 4;
@@ -740,7 +754,7 @@ Controle controleGeral(int opcode,int funct)
     if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
             (op2 == 0) && (op1 == 0) && (op0 == 0))
     {
-        /* Setando os sinais de controle corretos para instruções do tipo R */
+        /** Setando os sinais de controle corretos para instruções do tipo R **/
         ctrl.regDst        =   1;
         ctrl.origAlu       =   0;
         ctrl.memParaReg    =   0;
@@ -768,6 +782,7 @@ Controle controleGeral(int opcode,int funct)
         if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                 (op2 == 0) && (op1 == 1) && (op0 == 0))//j
         {
+                    /** Setando os sinais de controle corretos para a instruçaõ j **/
                     ctrl.regDst        =   0;
                     ctrl.origAlu       =   0;
                     ctrl.memParaReg    =   0;
@@ -787,6 +802,7 @@ Controle controleGeral(int opcode,int funct)
             if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                     (op2 == 0) && (op1 == 1) && (op0 == 1))//jal
             {
+                    /** Setando os sinais de controle corretos para a instruçaõ jal **/
                     ctrl.regDst        =   0;
                     ctrl.origAlu       =   0;
                     ctrl.memParaReg    =   0;
@@ -806,7 +822,7 @@ Controle controleGeral(int opcode,int funct)
                 if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                         (op2 == 1) && (op1 == 0) && (op0 == 0))//beq
                 {
-                    /* Setando os sinais de controle corretos para beq */
+                    /** Setando os sinais de controle corretos para beq **/
                     ctrl.regDst        =   0;
                     ctrl.origAlu       =   0;
                     ctrl.memParaReg    =   0;
@@ -828,7 +844,7 @@ Controle controleGeral(int opcode,int funct)
                     if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                             (op2 == 1) && (op1 == 0) && (op0 == 1))//bne
                     {
-                        /* Setando os sinais de controle corretos para bne */
+                        /** Setando os sinais de controle corretos para bne **/
                         ctrl.regDst        =   0;
                         ctrl.origAlu       =   0;
                         ctrl.memParaReg    =   0;
@@ -851,7 +867,7 @@ Controle controleGeral(int opcode,int funct)
                         if((op5 == 0) && (op4 == 0) && (op3 == 1) &&
                                 (op2 == 0) && (op1 == 0) && (op0 == 0))//addi
                         {
-                            /* Setando os sinais de controle corretos para addi */
+                            /** Setando os sinais de controle corretos para addi **/
                             ctrl.regDst        =   0;
                             ctrl.origAlu       =   1;
                             ctrl.memParaReg    =   0;
@@ -873,7 +889,7 @@ Controle controleGeral(int opcode,int funct)
                             if((op5 == 1) && (op4 == 0) && (op3 == 0) &&
                                     (op2 == 0) && (op1 == 1) && (op0 == 1))//lw
                             {
-                                /* Setando os sinais de controle corretos para lw */
+                                /** Setando os sinais de controle corretos para lw **/
                                 ctrl.regDst        =   0;
                                 ctrl.origAlu       =   1;
                                 ctrl.memParaReg    =   1;
@@ -896,7 +912,7 @@ Controle controleGeral(int opcode,int funct)
                                 if((op5 == 1) && (op4 == 0) && (op3 == 1) &&
                                         (op2 == 0) && (op1 == 1) && (op0 == 1))//sw
                                 {
-                                    /* Setando os sinais de controle corretos para sw */
+                                    /** Setando os sinais de controle corretos para sw **/
                                     ctrl.regDst        =   0;
                                     ctrl.origAlu       =   1;
                                     ctrl.memParaReg    =   0;
@@ -930,7 +946,6 @@ Controle controleGeral(int opcode,int funct)
 }
 
 /** log de teste de funções **/
-
 /**
 Funcoes testadas:
 addi    ----> ok
@@ -959,7 +974,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 {
     imprimeCabecalho(); // Chama função de impressão de cabeçalho a fim de organização
 
-    /* Variáveis locais */
+    /** Variáveis locais **/
     unsigned int instrucao_decimal;     // guarda o valor da instrução atual convertida para decimal
 
     int parte_31_26;                    // guarda o valor do OPCODE
@@ -976,10 +991,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 
     int entradaAlu1;                    // guarda o 1º valor a ser operado pela ALU
     int entradaAlu2;                    // guarda o 2º valor a ser operado pela ALU
-    int PC_31_28;                       // guarda os quatro primeiros bits de PC, para operação de jump
     int valorGravarRegistradores;       // guarda o valor a ser gravado no banco de registradores
-
-    int salto;                          // guarda informação de tomada de salto
 
     ALU unidadeLogica;                  // struct que salva o resultado da operação feita pela ALU, assim como sinal de controle zeroAlu
     Controle controle;                  // struct que salva os sinais de controle do caminho de dados
@@ -990,7 +1002,6 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
     while(PC >= 0 && PC < qntInstrucoes)    // Enquanto ainda existirem instruções a serem lidas
     {
         operacaoAtual = -1; // reseta o valor da instrução
-        salto = 0;  // reseta informação sobre tomada de salto
 
         /** Carrega a instrucao atual a partir da memória **/
         instrucao_decimal = mem[PC];
@@ -1069,22 +1080,6 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         /** Realiza os cálculos na ALU **/
         unidadeLogica = executaAlu(entradaAlu1,entradaAlu2,controle.ctrlAlu);
 
-        /** Verifica se é branch equal */
-        if(controle.branchEq == 1)
-        {
-            if(unidadeLogica.zeroAlu == 1){//toma desvio
-                salto = 1;
-            }
-        }
-
-        /** Verifica se é branch not equal */
-        if(controle.branchNotEq == 1)
-        {
-            if(unidadeLogica.zeroAlu == 0) {//toma desvio
-                salto = 1;
-            }
-        }
-
         if(controle.escreveMem == 1) // sw // mem_dados[15_0 + rs] = rt;
         {
             mem_dados[unidadeLogica.retornoAlu] = reg[parte_20_16];
@@ -1095,9 +1090,11 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
         }
-        else  // lw // rt = mem_dados[15_0 + rs];
+        else
         {
-            valorGravarRegistradores = mem_dados[unidadeLogica.retornoAlu];
+            if(controle.leMem == 1){// lw // rt = mem_dados[15_0 + rs];
+                valorGravarRegistradores = mem_dados[unidadeLogica.retornoAlu];
+            }
         }
 
         /** Verifica se pode gravar no banco de registradores **/
@@ -1105,9 +1102,11 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         {
             if(controle.ctrlAlu != 3 && controle.ctrlAlu != 4){
                 /** Define o registrador de destino a ser gravado **/
-                if(controle.regDst == 0)
-                    reg[parte_20_16] = valorGravarRegistradores;
-                else
+                if(controle.regDst == 0){
+                    if(controle.jump == 0){//não é jal
+                        reg[parte_20_16] = valorGravarRegistradores;
+                    }
+                }else
                     reg[parte_15_11] = valorGravarRegistradores;
             }
         }
@@ -1120,17 +1119,21 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
             if (controle.escreveReg == 1){ // Se for jal
                 reg[31] = (PC + 4/4)<<2;   //atualiza valor do registrador 31 ($ra)
             }
-
             PC = PC >> 28;          // descarta os 28 bits menos significativos do PC
             PC = PC << 28;          // realinha o valor dos dígitos mais significativos de PC
             PC += (deslocamento);   // soma o valor de salto ao PC
             PC = PC >> 2;           // alinha o PC para casar com os indíces de vetor (estrutura utilizada pra simular a memória)
         } else {                    // não sendo jump...
-            /* chamada para atualiza_PC */
-            atualiza_PC((parte_15_0_extendido<<2),salto);   // atualiza_PC: se salto ativo: beq, utiliza parte_15_0, senão, PC += 4
+            /** Verifica se é branch equal ou se é branch not equal*/
+            if(((controle.branchEq == 1) && (unidadeLogica.zeroAlu == 1)) ||
+                ((controle.branchNotEq == 1) && (unidadeLogica.zeroAlu == 0))){//toma desvio
+                    atualiza_PC((parte_15_0_extendido<<2),1);   // atualiza_PC: beq e bne, utiliza parte_15_0
+                }else{
+                    atualiza_PC((parte_15_0_extendido<<2),0);   // atualiza_PC: PC += 4
+                }
         }
 
-        /* Caso o modo de execução seja PASSO A PASSO, pausa até que seja apertada alguma tecla */
+        /** Caso o modo de execução seja PASSO A PASSO, pausa até que seja apertada alguma tecla **/
         if(modoExecucao == 1){
             getchar();
         }
@@ -1142,19 +1145,30 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 /**
 ** Procedimento resetaRegistradoresMemoria
 ** Responsável pela função RESET
-
 ** Reseta os valores de todos os registradores, incluindo HI e LO
+** a memória de instruções e de dados
 **/
 void resetaRegistradoresMemoria()
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int i;  // indexador, para percorrer o vetor de registradores
 
+    /** zera os registradores **/
     for(i=0;i<32;i++){  // Passa por todos os registradores, zerando cada um deles
         reg[i] = 0;
     }
 
-    /* zera os registradores HI e LO */
+    /** zera os registradores HI e LO **/
     HI=0;
     LO=0;
+
+    /** zera a memória de instrução **/
+    for(i=0;i<maxInstrucoes;i++){
+        mem[i] = 0;         //noop
+    }
+
+    /** zera a memória de dados **/
+    for(i=0;i<tamanhoMemoriaDados/4;i++){
+        mem_dados[i] = 0;
+    }
 }
