@@ -232,15 +232,14 @@ void imprimeCabecalho()
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
         //printf("%s\t",recuperaNomeRegistrador(i));
     }
-    gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tOP1\tOP2\tCTR\tJUMP\t\n");
-    for(i=1; i<tamanhoMemoriaDados/4; i++)
-    {
-        gravaArquivoModo(nomeArquivo,modoGravacao,"Mem");
-        gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(i));
-        gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
-        //printf("%Memd\t",i);
-    }
-    printf("\n");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tOP1\tOP2\tCTR\tJUMP\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[00]\tmem[01]\tmem[02]\tmem[03]\tmem[04]\tmem[05]\tmem[06]\tmem[07]\tmem[08]\tmem[09]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[10]\tmem[11]\tmem[12]\tmem[13]\tmem[14]\tmem[15]\tmem[16]\tmem[17]\tmem[18]\tmem[19]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[20]\tmem[21]\tmem[22]\tmem[23]\tmem[24]\tmem[25]\tmem[26]\tmem[27]\tmem[28]\tmem[29]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[30]\tmem[31]\tmem[32]\tmem[33]\tmem[34]\tmem[35]\tmem[36]\tmem[37]\tmem[38]\tmem[39]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[40]\tmem[41]\tmem[42]\tmem[43]\tmem[44]\tmem[45]\tmem[46]\tmem[47]\tmem[48]\tmem[49]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[50]\tmem[51]\tmem[52]\tmem[53]\tmem[54]\tmem[55]\tmem[56]\tmem[57]\tmem[58]\tmem[59]\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"mem[60]\tmem[61]\tmem[62]\tmem[63]\t\n");
 }
 
 /**
@@ -253,6 +252,7 @@ void imprimeRegistradores()
     int i;  // indexador para percorrer o banco de registradores
 
     /** Início da impressão do estado dos registradores no arquivo de log **/
+    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
     for(i=1; i<32; i++)
     {
@@ -264,23 +264,20 @@ void imprimeRegistradores()
 }
 
 /**
-** Procedimento imprimeMemDeDados
-** Imprime o toda a memória de dados no arquivo de log
+** Procedimento imprimeMemoria
+** Imprime o valor armazenado em casa posição da memória de dados no arquivo de log
 **/
-void imprimeMemDeDados()
+void imprimeMemoria()
 {
-    /** Variáveis locais **/
-    int i;  // indexador para percorrer a memória de dados
-
-    /** Início da impressão da memória de dados no arquivo de log **/
-   gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
-    for(i=1; i<tamanhoMemoriaDados/4; i++)
+    int i;
+    for(i=0;i<64;i++)   // Percorre a memória toda
     {
+        /* Ajusta a formatação e imprime o valor de cada posição existente na memória */
+        gravaArquivoModo(nomeArquivo,modoGravacao,"  ");
         gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(mem_dados[i]));
-        gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
-        //printf("%d\t",mem_dados[i]);
+        gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
     }
-    /** Término da impressão da memória de dados no arquivo de log **/
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\n");    // Ajeita a formatação do arquivo
 }
 
 /**
@@ -325,8 +322,6 @@ void imprimeControle(Controle c)
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.jump));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
-
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\n");
 }
 
 /** Procedimento recuperaOperacao
@@ -409,17 +404,15 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     completaComEspacos(retorno,20);
     strcat(retorno,"\t");
 
-    printf("%d\t%s\t",PC*4,retorno);                    // imprime "PC+4   retorno"
+    printf("\n%d\t%s\t",PC*4,retorno);                    // imprime "PC+4   retorno"
 
     gravaArquivoModo(nomeArquivo,modoGravacao,retorno); // grava a impressão no arquivo de log
-
-    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(PC));// grava o valor do PC no arquivo de log
 
     imprimeRegistradores();                             // grava o valor dos registradores no arquivo de log
 
     imprimeControle(c);                                 // grava o valor dos sinais de controle no arquivo de log
 
-    printf("\n");                                       // melhora a formatação
+    imprimeMemoria();                                   // grava o valor dos dados atualmente na memória no arquivo de log
 }
 
 /**
@@ -510,8 +503,8 @@ void atualiza_PC(int deslocamento,int mutex)
 {
     PC = PC + 4/4; // Incrementa o valor de PC
     if(mutex == 1){
-        if(deslocamento > 32768){//Verifica se o numero era negativo
-            deslocamento = (deslocamento >> 16);//retira a extensao de sinal
+        if(deslocamento > 32768){   // Verifica se o numero era negativo
+            deslocamento = (deslocamento >> 16);    // retira a extensao de sinal
         }
         deslocamento = (deslocamento >> 2); // >> 2 adicional é porque tratamos do índice do vetor
         PC += deslocamento;
