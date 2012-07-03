@@ -8,7 +8,9 @@
 /********************************* Variaveis Globais ***********************************/
 /***************************************************************************************/
 
-unsigned int mem[maxInstrucoes];
+unsigned int mem[maxInstrucoes];    // Memória de instruções
+unsigned int mem_dados[64];         // Memória de dados     OBS.: 64 posições = 64 words = 4x64 bytes = 256 bytes
+
 int PC;             // Program counter
 int reg[32];        // Registradores
 
