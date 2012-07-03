@@ -321,6 +321,7 @@ void imprimeControle(Controle c)
                       -1  > imprime sem offset
                        0  > imprime com o offset no final
                        1  > imprime com o offset no meio
+                       2  > imprime com 1 registrador e o offset
 **/
 void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOffset,Controle c)
 {
@@ -329,9 +330,11 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
 
     strcpy(retorno,ope);    // Copia o nome da operação atual para a string retorno
     strcat(retorno," ");    // Adiciona um espaço ao final da string retorno
-    switch(posOffset)       // checa offset
+
+    /* Checa tipo de offset, para formatar corretamente a instrução atual */
+    switch(posOffset)
     {
-    case -1:    // Se offset é -1
+    case -1:    // sem offset: Ex.: add $t1 $t2 $t3
     {
         if(strcmp(r0,"") > 0)
         {
@@ -349,7 +352,7 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
         }
     }
     break;
-    case 0:
+    case 0:     // offset no final: Ex.: addi $t1 $t2 20
     {
         if(strcmp(r0,"") > 0)
         {
@@ -364,7 +367,7 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
         strcat(retorno,recuperaOffset(offset));
     }
     break;
-    case 1:
+    case 1:     // offset no meio: Ex.: sw $t1 20($t2)
     {
         strcat(retorno,r0);
         strcat(retorno,", ");
@@ -374,19 +377,26 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
         strcat(retorno,")");
     }
     break;
-    case 2:
+    case 2:     // instruções de salto: Ex.: j 20
     {
         strcat(retorno,recuperaOffset(offset));
     }
     break;
     }
+
+    /* Continua a formatação da string */
     completaComEspacos(retorno,20);
     strcat(retorno,"\t");
-    printf("%d\t%s\t",PC*4,retorno);
-    gravaArquivoModo(nomeArquivo,modoGravacao,retorno);
-    imprimeRegistradores();
-    imprimeControle(c);
-    printf("\n");
+
+    printf("%d\t%s\t",PC*4,retorno);    // imprime "PC+4   retorno"
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,retorno); // grava a impressão no arquivo de log
+
+    imprimeRegistradores(); // grava o valor dos registradores no arquivo de log
+
+    imprimeControle(c);     // grava o valor dos sinais de controle no arquivo de log
+
+    printf("\n");           // melhora a formatação
 }
 
 /**
@@ -1046,9 +1056,9 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 salto = 1;
         }
 
-        if(controle.escreveMem == 1) // sw // mem[15_0 + rs] = rt;
+        if(controle.escreveMem == 1) // sw // mem_dados[15_0 + rs] = rt;
         {
-            mem[unidadeLogica.retornoAlu] = reg[parte_20_16];
+            mem_dados[unidadeLogica.retornoAlu] = reg[parte_20_16];
         }
 
         /** Verifica o que é gravado no banco de registradors **/
@@ -1056,9 +1066,9 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
         }
-        else  // lw // rt = mem[15_0 + rs];
+        else  // lw // rt = mem_dados[15_0 + rs];
         {
-            reg[parte_20_16] = mem[unidadeLogica.retornoAlu];
+            valorGravarRegistradores = mem_dados[unidadeLogica.retornoAlu];
         }
 
         /** Verifica se pode gravar no banco de registradores **/
@@ -1068,26 +1078,26 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 /** Define o registrador de destino a ser gravado **/
                 if(controle.regDst == 0)
                     reg[parte_20_16] = valorGravarRegistradores;
-
                 else
                     reg[parte_15_11] = valorGravarRegistradores;
-
             }
         }
 
         /** Imprime a operação atual **/
         imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0,controle);
 
-        /** Incrementa PC **/
-
-        if (controle.jump == 1){
-            PC = PC >> 26;
-            PC = PC << 26;
-            PC += (parte_25_0);
-        } else {
-            atualiza_PC(parte_15_0_extendido << 2,salto);
+        /** Incrementa e/ou atualiza o valor de PC **/
+        if (controle.jump == 1){    // Se for jump...
+            PC = PC >> 28;          // descarta os 28 bits menos significativos do PC
+            PC = PC << 28;          // realinha o valor dos dígitos mais significativos de PC
+            PC += (parte_25_0);     // soma o valor de salto ao PC
+            PC = PC >> 2;           // alinha o PC para casar com os indíces de vetor (estrutura utilizada pra simular a memória)
+        } else {                    // não sendo jump...
+            /* chamada para atualiza_PC */
+            atualiza_PC(parte_15_0_extendido << 2,salto);   // atualiza_PC: se salto ativo: beq, utiliza parte_15_0, senão, PC += 4
         }
 
+        /* Caso o modo de execução seja PASSO A PASSO, pausa até que seja apertada alguma tecla */
         if(modoExecucao == 1){
             getchar();
         }
