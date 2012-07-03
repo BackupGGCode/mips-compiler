@@ -24,7 +24,7 @@
 **/
 unsigned int bin2dec(char *bin)
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int len;    // Armazena o comprimento da string
     int k;      // indexador da string
 
@@ -65,7 +65,7 @@ int leArquivo(FILE* arq)
         return -1;
     }
 
-    /* Variaveis locais */
+    /** Variaveis locais **/
     char linha[100];    // Armazena a linha lida atual
     char* result;   // Variável para armazenar se foi possível ler a linha
     int i = 0;      // Variável para mostrar o número da linha
@@ -133,7 +133,7 @@ int leArquivo(FILE* arq)
 **/
 void gravaArquivo(FILE* arq,char* texto)
 {
-    /* Variaveis locais */
+    /** Variaveis locais **/
     int resultado = fputs(texto, arq); // Tenta gravar na linha e verifica se foi possível efetuar a gravação
 
     if (resultado == EOF)   // Se deu erro na gravação
@@ -159,7 +159,7 @@ int leArquivoModo(char* nomeArq,char* modo)
         return 0;
     }
 
-    /* Variáveis locais */
+    /** Variáveis locais **/
     FILE *arq = fopen(nomeArq, modo);       //Variável do arquivo
 
     if(arq == NULL) //Se o arquivo não existe ou teve erro na abertura
@@ -194,7 +194,7 @@ int gravaArquivoModo(char* nomeArq,char* modo,char* texto)
         return 0;
     }
 
-    /* Variaveis locais */
+    /** Variaveis locais **/
     FILE *arq = fopen(nomeArq, modo); //Variável do arquivo
 
     gravaArquivo(arq,texto);
@@ -219,7 +219,7 @@ int terminaCom(char *nomeArq,char *separador,char* extensaoArq)
     if(nomeArq == NULL)
         return 0;
 
-    /* Variáveis locais */
+    /** Variáveis locais **/
     char* parte;     // variável para pegar a(s) parte(s) antes do separador
 
     //Percorre toda a string nomeArq

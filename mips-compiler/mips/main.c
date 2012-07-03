@@ -12,6 +12,7 @@
 ** Também faz a chamada para execução das instruções contidas no arquivo
 **/
 void leInstrucoes(char* nomeArq){
+    /** Variáveis locais **/
     int qnt = leArquivoModo(nomeArq,"r+");  // Verifica se arquivo foi lido
 
     if(qnt == 0){   // Se não leu o arquivo corretamente
@@ -35,7 +36,7 @@ void leInstrucoes(char* nomeArq){
 ** Realiza a leitura e chama a execução de arquivos
 **/
 void realizaLeitura(){
-    /* Variaveis locais */
+    /** Variaveis locais **/
     char nomeArq[20];      // Armazena o nome do arquivo
     char testaArq[20];     // Variável para testar se é txt
     char continua;         // Variável para verificar se operador deseja continuar
@@ -68,7 +69,7 @@ void realizaLeitura(){
 ** Realiza a gravação e chama a execução de arquivos
 **/
 void realizaGravacao(){
-    /* Variáveis locais */
+    /** Variáveis locais **/
     char nomeArq[20];      // Armazena o nome do arquivo
     char testaArq[20];     // Variável para testar se é txt
     char continua;         // Variável para verificar se operador deseja continuar
@@ -89,7 +90,7 @@ void realizaGravacao(){
         }
 
         do{
-            limpaPrompt();  // Limpa a tela
+            limpaPrompt();      // Limpa a tela
             char texto[100];    // Variável que pega o texto a ser gravado no arquivo
 
             printf("Digite o texto a ser gravado em %s:\nTexto: ",nomeArq);
@@ -124,7 +125,7 @@ void resetaMem(){
 ** Inicia a execução chamando o menu
 **/
 int main(){
-    /* Variaveis locais */
+    /** Variaveis locais **/
     char continua;   // Variável para verificar se o operador deseja continuar
     int opc;         // Variável que salva a ação a ser executada
 

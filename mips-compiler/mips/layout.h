@@ -23,7 +23,7 @@ int selecionaMenu();
 
 /**
 ** Função execucaoMenu
-** Mostra o menu de modo de execucao e recupera a opção escolhida
+** Mostra o menu de modo de execução e recupera a opção escolhida
 ** Retorna(int)
    opção selecionada
 **/

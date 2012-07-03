@@ -10,7 +10,7 @@
 **/
 void wait ( float segundos )
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     clock_t endwait  = clock() + segundos * CLOCKS_PER_SEC ;
 
     //Trava o prompt por alguns segundos
@@ -36,7 +36,7 @@ void limpaPrompt()
 **/
 int selecionaMenu()
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int opcao; // Variável que guarda a opção selecionada no menu
 
     limpaPrompt();
@@ -55,13 +55,13 @@ int selecionaMenu()
 
 /**
 ** Função execucaoMenu
-** Mostra o menu de modo de execucao e recupera a opção escolhida
+** Mostra o menu de modo de execução e recupera a opção escolhida
 ** Retorna(int)
    opção selecionada
 **/
 int execucaoMenu()
 {
-    /* Variáveis locais */
+    /** Variáveis locais **/
     int opcao; // Variável que guarda a opção selecionada no menu
 
     //Menu
