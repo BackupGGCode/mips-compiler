@@ -167,6 +167,5 @@ int main(){
         printf("\nDeseja continuar(y ou n)? ");
         scanf("%c%*c",&continua);
     }while(continua == 'y' || continua == 'Y' || continua == '1' || continua == 's' || continua =='S');
-
     return 0;
 }

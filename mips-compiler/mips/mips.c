@@ -516,6 +516,42 @@ unsigned int extende_sinal(unsigned int var)
     return var;
 }
 
+/** Função multiplicacaoMIPS
+** Simula a multiplicação realizada pelo MIPS
+** Parâmetros:
+    valor1  int  -- multiplicador
+    valor2  int  -- multiplicando
+**/
+void multiplicacaoMIPS(int valor1,int valor2){
+    /** Variáveis locais **/
+    int i = 32;     // Controle do deslocamento
+
+    HI = 0;         // Zera o HI
+    LO = valor2;    // Recebe o multiplicando
+
+    do//Repete até ...
+    {
+        if(((LO << 31) >> 31) == 1){            // Bit menos siginificativo de LO == 1
+            HI += valor1;
+        }
+        LO = LO >> 1;                           // Desloca um em HI
+        LO += (HI << 31);                       // Pega o bit menos significativo do HI e seta no LO
+        HI = HI >> 1;                           // Desloca um em HI
+        i--;
+    }while(i > 0);  // ... Realizar 31 passos
+}
+
+/** Função divisaoMIPS
+** Simula a divisão realizada pelo MIPS
+** Parâmetros:
+    valor1  int  -- dividendo
+    valor2  int  -- divisor
+**/
+void divisaoMIPS(int valor1,int valor2){
+    HI = registrador1 % registrador2;
+    LO = registrador1 / registrador2;
+}
+
 /** Função executaAlu
 ** Simula a execução da ALU
 ** Parâmetros:
@@ -553,15 +589,11 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
     case 2:
         aluControle.retornoAlu = registrador1 + registrador2;
         break;  //add.
-    case 3:{
-        HI = registrador1 * registrador2;
-        LO = registrador1 * registrador2;
-    }
+    case 3:
+       multiplicacaoMIPS(registrador1,registrador2);
         break;  //mult
-    case 4:{
-        HI = registrador1 % registrador2;
-        LO = registrador1 / registrador2;
-    }
+    case 4:
+        divisaoMIPS(registrador1,registrador2);
         break;  //div
     case 5:
         aluControle.retornoAlu = registrador1 << registrador2;
