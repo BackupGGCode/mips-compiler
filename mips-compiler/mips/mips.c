@@ -464,8 +464,9 @@ void imprimeOperacaoAtual(int rs,int rt,int rd,int shamt,int offset,int target,C
 void atualiza_PC(int deslocamento,int mutex)
 {
     PC = PC + 4/4;  // Incrementa o valor de PC
-    if(mutex == 1)
+    if(mutex == 1){
         PC += ((deslocamento >> 16) >> 2); //atualiza o PC somando deslocamento >> 16; o >> 2 adicional é porque tratamos do índice do vetor
+    }
 }
 
 /**
@@ -750,8 +751,18 @@ Controle controleGeral(int opcode,int funct)
         if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                 (op2 == 0) && (op1 == 1) && (op0 == 0))//j
         {
-            //a definir
-            operacaoAtual = 9;
+                    ctrl.regDst        =   0;
+                    ctrl.origAlu       =   0;
+                    ctrl.memParaReg    =   0;
+                    ctrl.escreveReg    =   0;
+                    ctrl.leMem         =   0;
+                    ctrl.escreveMem    =   0;
+                    ctrl.branchEq      =   0;
+                    ctrl.branchNotEq   =   0;
+                    ctrl.opAlu1        =   0;
+                    ctrl.opAlu0        =   0;
+                    ctrl.jump          =   1;   // beq não realizam jump, realiza branch
+                    operacaoAtual = 9;
         }
         else
         {
@@ -936,7 +947,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 
     int entradaAlu1;                    // guarda o 1º valor a ser operado pela ALU
     int entradaAlu2;                    // guarda o 2º valor a ser operado pela ALU
-
+    int PC_31_28;                       // guarda os quatro primeiros bits de PC, para operação de jump
     int valorGravarRegistradores;       // guarda o valor a ser gravado no banco de registradores
 
     int salto;                          // guarda informação de tomada de salto
@@ -1068,7 +1079,14 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         imprimeOperacaoAtual(parte_25_21,parte_20_16,parte_15_11,parte_10_6,parte_15_0,parte_25_0,controle);
 
         /** Incrementa PC **/
-        atualiza_PC(parte_15_0_extendido << 2,salto);
+
+        if (controle.jump == 1){
+            PC = PC >> 26;
+            PC = PC << 26;
+            PC += (parte_25_0);
+        } else {
+            atualiza_PC(parte_15_0_extendido << 2,salto);
+        }
 
         if(modoExecucao == 1){
             getchar();
