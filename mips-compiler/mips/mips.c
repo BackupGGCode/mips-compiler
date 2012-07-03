@@ -1013,7 +1013,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 }
             }
         }
-        else    // beq e bne
+        else    // sw e lw
         {
             entradaAlu2 = parte_15_0;
         }
@@ -1035,9 +1035,9 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                 salto = 1;
         }
 
-        if(controle.escreveMem == 1) // sw
+        if(controle.escreveMem == 1) // sw // mem[15_0 + rs] = rt;
         {
-            //entradaAlu2 e unidadeLogica.retornoAlu
+            mem[unidadeLogica.retornoAlu] = reg[parte_20_16];
         }
 
         /** Verifica o que é gravado no banco de registradors **/
@@ -1045,9 +1045,9 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
         }
-        else  // lw
+        else  // lw // rt = mem[15_0 + rs];
         {
-
+            reg[parte_20_16] = mem[unidadeLogica.retornoAlu];
         }
 
         /** Verifica se pode gravar no banco de registradores **/
