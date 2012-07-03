@@ -1054,8 +1054,6 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                             entradaAlu2 = parte_25_21;          // registrador no qual a operação será realizada
                             controle.ctrlAlu = 2;               // add
                             deslocamento = reg[parte_25_21];    // modifica o valor da variável de deslocamento
-                            //controle.jump = 1;                  // jr é um jump...
-                            //controle.escreveReg = 0;            // embora seja do tipo R, jr não escreve em registrador
                         } else { // outras instruções que façam uso da ALU
                             entradaAlu2 = reg[parte_20_16];
                         }
