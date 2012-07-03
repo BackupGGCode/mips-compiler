@@ -21,4 +21,12 @@ void limpaPrompt();
 **/
 int selecionaMenu();
 
+/**
+** Função execucaoMenu
+** Mostra o menu de modo de execucao e recupera a opção escolhida
+** Retorna(int)
+   opção selecionada
+**/
+int execucaoMenu();
+
 #endif // LAYOUT_H_INCLUDED
