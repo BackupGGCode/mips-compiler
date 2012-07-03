@@ -270,22 +270,22 @@ void imprimeControle(Controle c)
 {
     gravaArquivoModo(nomeArquivo,modoGravacao,"  ");
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.regDst));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.origAlu));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.memParaReg));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.escreveReg));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.leMem));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t  ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.escreveMem));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t\t ");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.branchEq));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
@@ -754,7 +754,13 @@ Controle controleGeral(int opcode,int funct)
 
         ctrl.ctrlAlu       = codigoControleAlu(1,0,funct);  // escolhe, de acordo com o funct, a instrução do tipo R a ser executada
 
-        ctrl.jump          =   0;   // instruções do tipo R não utilizam jump
+        if(ctrl.ctrlAlu == 8)    // jr
+        {
+            ctrl.escreveReg = 0;    // jr não escreve no banco de registradores
+            ctrl.jump = 1;          // jr, embora seja do tipo R, é um jump
+        }
+        else
+            ctrl.jump = 0;   // outras instruções do tipo R não utilizam jump
     }
     else
     {
@@ -1044,11 +1050,12 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                     {
                         if(controle.ctrlAlu == 8) // jr
                         {
-                            entradaAlu1 = 0;
-                            entradaAlu2 = parte_25_21; //registrador na qual a operação será realizada
-                            controle.ctrlAlu = 2;
-                            deslocamento = reg[parte_25_21]; // modifica o valor da variável de deslocamento
-                            controle.jump = 1;
+                            entradaAlu1 = 0;                    // zero, para não modificar o registrador
+                            entradaAlu2 = parte_25_21;          // registrador no qual a operação será realizada
+                            controle.ctrlAlu = 2;               // add
+                            deslocamento = reg[parte_25_21];    // modifica o valor da variável de deslocamento
+                            //controle.jump = 1;                  // jr é um jump...
+                            //controle.escreveReg = 0;            // embora seja do tipo R, jr não escreve em registrador
                         } else { // outras instruções que façam uso da ALU
                             entradaAlu2 = reg[parte_20_16];
                         }
@@ -1118,7 +1125,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 
             PC = PC >> 28;          // descarta os 28 bits menos significativos do PC
             PC = PC << 28;          // realinha o valor dos dígitos mais significativos de PC
-            PC += (deslocamento);     // soma o valor de salto ao PC
+            PC += (deslocamento);   // soma o valor de salto ao PC
             PC = PC >> 2;           // alinha o PC para casar com os indíces de vetor (estrutura utilizada pra simular a memória)
         } else {                    // não sendo jump...
             /* chamada para atualiza_PC */
