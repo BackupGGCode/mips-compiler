@@ -623,7 +623,7 @@ int codigoControleAlu(int opAlu1,int opAlu0,int funct)
             if((op5 == 0) && (op4 == 0) && (op3 == 1) &&
                     (op2 == 0) && (op1 == 0) && (op0 == 0))//jr
             {
-                //ctrlAlu = 8;
+                ctrlAlu = 8;
                 operacaoAtual = 8;
             }
             if((op5 == 0) && (op4 == 1) && (op3 == 0) &&
@@ -772,7 +772,7 @@ Controle controleGeral(int opcode,int funct)
                     ctrl.branchNotEq   =   0;
                     ctrl.opAlu1        =   0;
                     ctrl.opAlu0        =   0;
-                    ctrl.jump          =   1;   // beq não realizam jump, realiza branch
+                    ctrl.jump          =   1;
                     operacaoAtual = 9;
         }
         else
@@ -781,7 +781,17 @@ Controle controleGeral(int opcode,int funct)
             if((op5 == 0) && (op4 == 0) && (op3 == 0) &&
                     (op2 == 0) && (op1 == 1) && (op0 == 1))//jal
             {
-                //a definir
+                    ctrl.regDst        =   0;
+                    ctrl.origAlu       =   0;
+                    ctrl.memParaReg    =   0;
+                    ctrl.escreveReg    =   1;
+                    ctrl.leMem         =   0;
+                    ctrl.escreveMem    =   0;
+                    ctrl.branchEq      =   0;
+                    ctrl.branchNotEq   =   0;
+                    ctrl.opAlu1        =   0;
+                    ctrl.opAlu0        =   0;
+                    ctrl.jump          =   1;
                 operacaoAtual = 10;
             }
             else
@@ -928,9 +938,9 @@ slt     ----> ok
 sll     ----> ok
 lw      ---->
 sw      ---->
-beq     ---->
-bne     ---->
-j       ---->
+beq     ----> ok
+bne     ----> ok
+j       ----> ok
 jr      ---->
 jal     ---->
 **/
@@ -955,6 +965,8 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
     int parte_25_0;                     // guarda o valor do endereço de jump
     short int parte_15_0;               // guarda o valor do endereço de branch
     unsigned int parte_15_0_extendido;  // guarda o valor do endereço de branch, após a extensão de sinal
+
+    int deslocamento;  // guarda o valor do deslocamento a ser executado no PC, após uma instrução de desvio oou salto
 
     int entradaAlu1;                    // guarda o 1º valor a ser operado pela ALU
     int entradaAlu2;                    // guarda o 2º valor a ser operado pela ALU
@@ -985,7 +997,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         instrucao_decimal -= (parte_25_21 << 21);           // elimina o RS da instrução
         parte_20_16 = instrucao_decimal >> 16;              // guarda o RT
         instrucao_decimal -= (parte_20_16 << 16);           // elimina o RT da instrução
-
+        deslocamento = parte_25_0;
         /** Essa parte é útil caso a instrução seja branch **/
         if(instrucao_decimal >> 15 == 1)
             parte_15_0 = 32768 - instrucao_decimal;         // Salva o endereço de branch
@@ -1028,9 +1040,18 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
                         entradaAlu2 = LO;
                         controle.ctrlAlu = 2;
                     }
-                    else    // outras instruções que façam uso da ALU
+                    else
                     {
-                        entradaAlu2 = reg[parte_20_16];
+                        if(controle.ctrlAlu == 8) // jr
+                        {
+                            entradaAlu1 = 0;
+                            entradaAlu2 = parte_25_21; //registrador na qual a operação será realizada
+                            controle.ctrlAlu = 2;
+                            deslocamento = reg[parte_25_21]; // modifica o valor da variável de deslocamento
+                            controle.jump = 1;
+                        } else { // outras instruções que façam uso da ALU
+                            entradaAlu2 = reg[parte_20_16];
+                        }
                     }
                 }
             }
@@ -1046,15 +1067,17 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         /** Verifica se é branch equal */
         if(controle.branchEq == 1)
         {
-            if(unidadeLogica.zeroAlu == 1) //toma desvio
+            if(unidadeLogica.zeroAlu == 1){//toma desvio
                 salto = 1;
+            }
         }
 
         /** Verifica se é branch not equal */
         if(controle.branchNotEq == 1)
         {
-            if(unidadeLogica.zeroAlu == 0) //toma desvio
+            if(unidadeLogica.zeroAlu == 0) {//toma desvio
                 salto = 1;
+            }
         }
 
         if(controle.escreveMem == 1) // sw // mem_dados[15_0 + rs] = rt;
@@ -1062,7 +1085,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
             mem_dados[unidadeLogica.retornoAlu] = reg[parte_20_16];
         }
 
-        /** Verifica o que é gravado no banco de registradors **/
+        /** Verifica o que é gravado no banco de registradores **/
         if(controle.memParaReg == 0) //resultado alu
         {
             valorGravarRegistradores = unidadeLogica.retornoAlu;
@@ -1089,13 +1112,17 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
 
         /** Incrementa e/ou atualiza o valor de PC **/
         if (controle.jump == 1){    // Se for jump...
+            if (controle.escreveReg == 1){ // Se for jal
+                reg[31] = (PC + 4/4)<<2;   //atualiza valor do registrador 31 ($ra)
+            }
+
             PC = PC >> 28;          // descarta os 28 bits menos significativos do PC
             PC = PC << 28;          // realinha o valor dos dígitos mais significativos de PC
-            PC += (parte_25_0);     // soma o valor de salto ao PC
+            PC += (deslocamento);     // soma o valor de salto ao PC
             PC = PC >> 2;           // alinha o PC para casar com os indíces de vetor (estrutura utilizada pra simular a memória)
         } else {                    // não sendo jump...
             /* chamada para atualiza_PC */
-            atualiza_PC(parte_15_0_extendido << 2,salto);   // atualiza_PC: se salto ativo: beq, utiliza parte_15_0, senão, PC += 4
+            atualiza_PC((parte_15_0_extendido<<2),salto);   // atualiza_PC: se salto ativo: beq, utiliza parte_15_0, senão, PC += 4
         }
 
         /* Caso o modo de execução seja PASSO A PASSO, pausa até que seja apertada alguma tecla */
