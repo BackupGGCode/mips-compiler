@@ -9,7 +9,7 @@
 /***************************************************************************************/
 
 unsigned int mem[maxInstrucoes];                        // Memória de instruções
-unsigned int mem_dados[tamanhoMemoriaDados/4];         // Memória de dados     OBS.: 64 posições = 64 words = 4x64 bytes = 256 bytes
+unsigned int mem_dados[tamanhoMemoriaDados/4];          // Memória de dados     OBS.: 256/4 posições = 64 words = 4x64 bytes = 256 bytes
 
 int PC;             // Program counter
 int reg[32];        // Registradores
