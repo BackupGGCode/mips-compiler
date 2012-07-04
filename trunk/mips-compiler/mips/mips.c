@@ -591,9 +591,6 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
     /** Variáveis locais **/
     ALU aluControle;    // Struct que contém as variáveis de controle da ALU
 
-    // Modifica o valor do sinal de controle zeroAlu, de acordo com o valor dos registradores em questão
-    aluControle.zeroAlu = (registrador1 - registrador2 == 0)? 1 : 0;    // zeroAlu é ativo em ALTO
-
     switch(ctrlAlu) // Escolhe qual operação deve ser executada pela ALU
     {
     case 0:
@@ -628,6 +625,10 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
     default:    //operação inválida
         printf("\nALU nao sabe realizar essa operacao\nCodigo operacao: %d\n\n",ctrlAlu);
     }
+
+    // Modifica o valor do sinal de controle zeroAlu, de acordo com o valor dos registradores em questão
+    aluControle.zeroAlu = (aluControle.retornoAlu == 0)? 1 : 0;    // zeroAlu é ativo em ALTO
+
     return aluControle;
 }
 
