@@ -498,10 +498,9 @@ void atualiza_PC(int deslocamento,int mutex)
 {
     PC = PC + 4/4; // Incrementa o valor de PC
     if(mutex == 1){
-        if(deslocamento > 32768){   // Verifica se o numero era negativo
-            deslocamento = (deslocamento >> 16);    // retira a extensao de sinal
+        if(deslocamento < 0){   // Verifica se o numero era negativo
+            deslocamento = (deslocamento >> 16);    // retira a extensao de sinal e adequa contagem
         }
-        deslocamento = (deslocamento >> 2); // >> 2 adicional é porque tratamos do índice do vetor
         PC += deslocamento;
     }
 }
@@ -538,6 +537,7 @@ unsigned int extende_sinal(unsigned int var)
     valor1  int  -- multiplicador
     valor2  int  -- multiplicando
 **/
+
 void multiplicacaoMIPS(int valor1,int valor2){
     /** Variáveis locais **/
     int i = 32;     // Controle do deslocamento
@@ -607,9 +607,11 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
         break;  //add.
     case 3:
        multiplicacaoMIPS(registrador1,registrador2);
+       aluControle.retornoAlu = 0;
         break;  //mult
     case 4:
         divisaoMIPS(registrador1,registrador2);
+        aluControle.retornoAlu = 0;
         break;  //div
     case 5:
         aluControle.retornoAlu = registrador1 << registrador2;
@@ -1047,11 +1049,14 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         parte_20_16 = instrucao_decimal >> 16;              // guarda o RT
         instrucao_decimal -= (parte_20_16 << 16);           // elimina o RT da instrução
         deslocamento = parte_25_0;
-        /** Essa parte é útil caso a instrução seja branch **/
-        if(instrucao_decimal >> 15 == 1)
-            parte_15_0 = 32768 - instrucao_decimal;         // Salva o endereço de branch
-        else
-            parte_15_0 = instrucao_decimal;                 // Salva o endereço de branch
+
+        /** Essa parte seria útil caso a numeração fosse do tipo sinal e magnitude **/
+        //if(instrucao_decimal >> 15 == 1)
+        //    parte_15_0 = 32768 - instrucao_decimal;         // Salva o endereço de branch
+        //else
+        /** sinal e magnitude não foram usados **/
+
+        parte_15_0 = instrucao_decimal;                     // Salva o endereço de branch
 
         parte_15_11 = instrucao_decimal >> 11;              // guarda o RD
         instrucao_decimal -= (parte_15_11 << 11);           // elimina o RD da instrução
