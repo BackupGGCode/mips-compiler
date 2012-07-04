@@ -64,13 +64,6 @@ typedef struct
     /**     Se 1 -- > desvio deve ser tomado                        */
     int branchNotEq;
 
-    /** Controlam o tipo de operação deverá ser feita pela ALU      */
-    /**     Se 00 -- > add                                          */
-    /**     Se 01 -- > subtract                                     */
-    /**     Se 10 -- > TIPO R, verificar campo funct                */
-    int opAlu1;
-    int opAlu0;
-
     /** Controle de tomada de jump                                  */
     /**     Se 0 -- > jump não deve ser efetuado                    */
     /**     Se 1 -- > jump deve ser efetuado                        */
@@ -232,7 +225,7 @@ void imprimeCabecalho()
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t");
         //printf("%s\t",recuperaNomeRegistrador(i));
     }
-    gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tOP1\tOP2\tCTR\tJUMP\t");
+    gravaArquivoModo(nomeArquivo,modoGravacao,"RegDst\tOriAlu\tMemPReg\tEscReg\tLeMem\tEscMem\tBEq\tBNE\tCTR\tJUMP\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[00]\tmem[01]\tmem[02]\tmem[03]\tmem[04]\tmem[05]\tmem[06]\tmem[07]\tmem[08]\tmem[09]\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[10]\tmem[11]\tmem[12]\tmem[13]\tmem[14]\tmem[15]\tmem[16]\tmem[17]\tmem[18]\tmem[19]\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[20]\tmem[21]\tmem[22]\tmem[23]\tmem[24]\tmem[25]\tmem[26]\tmem[27]\tmem[28]\tmem[29]\t");
@@ -240,6 +233,9 @@ void imprimeCabecalho()
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[40]\tmem[41]\tmem[42]\tmem[43]\tmem[44]\tmem[45]\tmem[46]\tmem[47]\tmem[48]\tmem[49]\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[50]\tmem[51]\tmem[52]\tmem[53]\tmem[54]\tmem[55]\tmem[56]\tmem[57]\tmem[58]\tmem[59]\t");
     gravaArquivoModo(nomeArquivo,modoGravacao,"mem[60]\tmem[61]\tmem[62]\tmem[63]\t\n");
+
+    //printf("mem[00]\tmem[01]\tmem[02]\tmem[03]\tmem[04]\tmem[05]\tmem[06]\tmem[07]\tmem[08]\tmem[09]\tmem[10]\tmem[11]\tmem[12]\tmem[13]\tmem[14]\tmem[15]\tmem[16]\tmem[17]\tmem[18]\tmem[19]\tmem[20]\tmem[21]\tmem[22]\tmem[23]\tmem[24]\tmem[25]\tmem[26]\tmem[27]\tmem[28]\tmem[29]\tmem[30]\tmem[31]\tmem[32]\tmem[33]\tmem[34]\tmem[35]\tmem[36]\tmem[37]\tmem[38]\tmem[39]\tmem[40]\tmem[41]\tmem[42]\tmem[43]\tmem[44]\tmem[45]\tmem[46]\tmem[47]\tmem[48]\tmem[49]\tmem[50]\tmem[51]\tmem[52]\tmem[53]\tmem[54]\tmem[55]\tmem[56]\tmem[57]\tmem[58]\tmem[59]\tmem[60]\tmem[61]\tmem[62]\tmem[63]");
+    printf("\n");
 }
 
 /**
@@ -270,14 +266,15 @@ void imprimeRegistradores()
 void imprimeMemoria()
 {
     int i;
-    for(i=0;i<64;i++)   // Percorre a memória toda
+    for(i=0;i<tamanhoMemoriaDados/4;i++)   // Percorre a memória toda
     {
         /* Ajusta a formatação e imprime o valor de cada posição existente na memória */
         gravaArquivoModo(nomeArquivo,modoGravacao,"  ");
         gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(mem_dados[i]));
         gravaArquivoModo(nomeArquivo,modoGravacao,"\t  ");
+        //printf("%d\t",mem_dados[i]);
+
     }
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\n");    // Ajeita a formatação do arquivo
 }
 
 /**
@@ -309,12 +306,6 @@ void imprimeControle(Controle c)
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.branchNotEq));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
-
-    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.opAlu1));
-    gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
-
-    gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.opAlu0));
     gravaArquivoModo(nomeArquivo,modoGravacao,"\t ");
 
     gravaArquivoModo(nomeArquivo,modoGravacao,recuperaOffset(c.ctrlAlu));
@@ -413,6 +404,10 @@ void recuperaOperacao(char* ope,char* r0,char* r1,char* r2,int offset,int posOff
     imprimeControle(c);                                 // grava o valor dos sinais de controle no arquivo de log
 
     imprimeMemoria();                                   // grava o valor dos dados atualmente na memória no arquivo de log
+
+    gravaArquivoModo(nomeArquivo,modoGravacao,"\n");    // Ajeita a formatação do arquivo
+
+    printf("\n");                                       // Ajeita a formatação no prompt
 }
 
 /**
@@ -638,9 +633,11 @@ ALU executaAlu(int registrador1, int registrador2, int ctrlAlu)
 ** Função codigoControleAlu
 ** Gera os sinais de controle para que a ALU execute a operação correta
 ** Parâmetros:
-    opAlu1  int  -- gerado pela unidade de controle
-    opAlu0  int  -- gerado pela unidade de controle
-    funct   int  -- caso seja instrucao do tipo R, usa o funct
+     opAlu1, opAlu0 int --  Controlam o tipo de operação deverá ser feita pela ALU
+                        Se 00 -- > add
+                        Se 01 -- > subtract
+                        Se 10 -- > TIPO R, verificar campo funct
+    funct           int  -- caso seja instrucao do tipo R, usa o funct
 **/
 int codigoControleAlu(int opAlu1,int opAlu0,int funct)
 {
@@ -771,8 +768,6 @@ Controle cria_controle()
     c.escreveMem    =   0;
     c.branchEq      =   0;
     c.branchNotEq   =   0;
-    c.opAlu1        =   0;
-    c.opAlu0        =   0;
     c.jump          =   0;
     c.ctrlAlu       =   0;
 
@@ -816,8 +811,6 @@ Controle controleGeral(int opcode,int funct)
         ctrl.escreveMem    =   0;
         ctrl.branchEq      =   0;
         ctrl.branchNotEq   =   0;
-        ctrl.opAlu1        =   1;
-        ctrl.opAlu0        =   0;
 
         ctrl.ctrlAlu       = codigoControleAlu(1,0,funct);  // escolhe, de acordo com o funct, a instrução do tipo R a ser executada
 
@@ -844,8 +837,6 @@ Controle controleGeral(int opcode,int funct)
                     ctrl.escreveMem    =   0;
                     ctrl.branchEq      =   0;
                     ctrl.branchNotEq   =   0;
-                    ctrl.opAlu1        =   0;
-                    ctrl.opAlu0        =   0;
                     ctrl.jump          =   1;
                     operacaoAtual = 9;
         }
@@ -864,8 +855,6 @@ Controle controleGeral(int opcode,int funct)
                     ctrl.escreveMem    =   0;
                     ctrl.branchEq      =   0;
                     ctrl.branchNotEq   =   0;
-                    ctrl.opAlu1        =   0;
-                    ctrl.opAlu0        =   0;
                     ctrl.jump          =   1;
                 operacaoAtual = 10;
             }
@@ -884,8 +873,6 @@ Controle controleGeral(int opcode,int funct)
                     ctrl.escreveMem    =   0;
                     ctrl.branchEq      =   1;
                     ctrl.branchNotEq   =   0;
-                    ctrl.opAlu1        =   0;
-                    ctrl.opAlu0        =   1;
 
                     ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);  // escolhe a instrução a ser executada
 
@@ -906,8 +893,6 @@ Controle controleGeral(int opcode,int funct)
                         ctrl.escreveMem    =   0;
                         ctrl.branchEq      =   0;
                         ctrl.branchNotEq   =   1;
-                        ctrl.opAlu1        =   0;
-                        ctrl.opAlu0        =   1;
 
                         ctrl.ctrlAlu       = codigoControleAlu(0,1,funct);  // escolhe a instrução a ser executada
 
@@ -929,8 +914,6 @@ Controle controleGeral(int opcode,int funct)
                             ctrl.escreveMem    =   0;
                             ctrl.branchEq      =   0;
                             ctrl.branchNotEq   =   0;
-                            ctrl.opAlu1        =   0;
-                            ctrl.opAlu0        =   0;
 
                             ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
 
@@ -951,8 +934,6 @@ Controle controleGeral(int opcode,int funct)
                                 ctrl.escreveMem    =   0;
                                 ctrl.branchEq      =   0;
                                 ctrl.branchNotEq   =   0;
-                                ctrl.opAlu1        =   0;
-                                ctrl.opAlu0        =   0;
 
                                 ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
 
@@ -974,8 +955,6 @@ Controle controleGeral(int opcode,int funct)
                                     ctrl.escreveMem    =   1;
                                     ctrl.branchEq      =   0;
                                     ctrl.branchNotEq   =   0;
-                                    ctrl.opAlu1        =   0;
-                                    ctrl.opAlu0        =   0;
 
                                     ctrl.ctrlAlu       = codigoControleAlu(0,0,funct);  // escolhe a instrução a ser executada
 
@@ -1192,7 +1171,7 @@ void executaInstrucoes(int qntInstrucoes,int modoExecucao)
         }
     }
     gravaArquivoModo(nomeArquivo,modoGravacao,"\n\n------------------------------Fim da gravacao------------------------------\n\n");
-    printf("Operacoes finalizadas com sucesso!\n");
+    printf("\nOperacoes finalizadas com sucesso!\n");
 }
 
 /**
